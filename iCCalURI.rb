@@ -3,6 +3,7 @@
 require 'net/https'
 require 'uri'
 require 'rexml/document'
+require 'nkf'
 
 class ReqCaller
   attr_reader :response
