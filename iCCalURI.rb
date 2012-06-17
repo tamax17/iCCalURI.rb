@@ -1,20 +1,40 @@
 #!/usr/bin/env ruby
-
+# -*- coding: undecided -*-
+#
+# = iCloud の CalDAV URI を取得するスクリプト
+#
+# Copyright:: Copyright (c) 2012 MACHIDA 'matchy' Hideki
+# License:: Ruby ライセンスに準拠
+# 
+# == Examples
+# 
+# iCcalURI.rb YourAppleID YourPassword [01-10]
+# 
 require 'net/https'
 require 'uri'
 require 'rexml/document'
 require 'nkf'
 
+#
+# == iCloud サーバーに PROPFIND リクエストを送信するクラス
+#
 class ReqCaller
+
+  # 返ってきた PROPFIND レスポンス
   attr_reader :response
+  # リクエスト送信先 URI
   attr_reader :uriPath
 
+  # コンストラクタ
+  # serverNum は文字列で '01'〜'10'のいずれか
   def initialize(appleId, password, serverNum='01')
     @appleId = appleId
     @password = password
     @uriPath = 'https://p' + serverNum + '-caldav.icloud.com'
   end
 
+  # リクエスト送信メソッド
+  # data -- 送信データ  / path -- 送信先URIのパス部分
   def request(data, path='/')
     uri = URI.parse(@uriPath + path)
     req = Net::HTTP::Propfind.new(uri.path, {'Depth' => '1'})
@@ -30,13 +50,21 @@ class ReqCaller
       end
     end
   end
+
 end
 
+#
+# == iCloud の CalDAV URI を取得するクラス
+#
 class ICCalListGetter
+
+  # コンストラクタ
+  # serverNum は文字列で '01'〜'10'のいずれか
   def initialize(appleId, password, serverNum='01')
     @caller = ReqCaller.new(appleId, password, serverNum)
   end
 
+  # iCloud 上でのユーザーID を取得
   def getUserId
     req  = '<A:propfind xmlns:A="DAV:">'
     req += '<A:prop><A:current-user-principal/></A:prop>'
@@ -50,6 +78,7 @@ class ICCalListGetter
     return href.split('/')[1]
   end
 
+  # ユーザーID に対応する表示名とURIのリストを取得
   def getURLs(userId)
     req  = '<A:propfind xmlns:A="DAV:">'
     req += '<A:prop><A:displayname/></A:prop>'
@@ -76,15 +105,18 @@ class ICCalListGetter
 
 end
 
+# 実行環境が Windows か?
 def isMSWIN
   return RUBY_PLATFORM.downcase =~ /mswin(?!ce)|mingw|cygwin|bccwin/
 end
 
+#
+# ここから実行スクリプト
+#
 if ARGV.length < 2
   puts "Usage: hoge appleId password <01~10>"
   exit
 end
-
 begin
   server = '01'
   server = ARGV[2] if ARGV.length >= 3
@@ -101,3 +133,10 @@ rescue => e
   p e
   puts "error."
 end
+
+# -*- setting for emacs -*-
+# Local Variables:
+#   mode:ruby
+#   indent-tabs-mode:nil
+#   ruby-indent-level:2
+# End:
