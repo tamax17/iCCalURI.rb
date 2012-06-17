@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# -*- coding: undecided -*-
+# -*- coding: utf-8 -*-
 #
 # = iCloud の CalDAV URI を取得するスクリプト
 #
@@ -114,7 +114,8 @@ end
 # ここから実行スクリプト
 #
 if ARGV.length < 2
-  puts "Usage: hoge appleId password <01~10>"
+  basename = File.basename(__FILE__)
+  warn "Usage: #{basename} appleId password [01-10]"
   exit
 end
 begin
@@ -124,14 +125,14 @@ begin
   ic = ICCalListGetter.new(ARGV[0], ARGV[1], server)
   buff = ic.run
   buff.each do |item|
-    buff = item['name'] + ':' + item['href']
+    buff = "#{item['name']}:#{item['href']}"
     buff = NKF.nkf('-sx', buff) if (isMSWIN)
     puts buff
   end
-  puts "done."
+  warn "done."
 rescue => e
   p e
-  puts "error."
+  warn "error."
 end
 
 # -*- setting for emacs -*-
