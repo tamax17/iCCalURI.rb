@@ -98,6 +98,7 @@ class ICCalListGetter
     return result
   end
 
+  # 実行メソッド
   def run
     userId = self.getUserId
     return self.getURLs(userId)
