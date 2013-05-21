@@ -59,7 +59,7 @@ end
 class ICCalListGetter
 
   # コンストラクタ
-  # serverNum は文字列で '01'〜'10'のいずれか
+  # serverNum は文字列で '01'?'10'のいずれか
   def initialize(appleId, password, serverNum='01')
     @caller = ReqCaller.new(appleId, password, serverNum)
   end
@@ -71,7 +71,7 @@ class ICCalListGetter
     req += '</A:propfind>'
 
     @caller.request(req)
-    raise @caller.response.body if (@caller.response.class != Net::HTTPSuccess)
+    raise @caller.response.body unless @caller.response.is_a?(Net::HTTPSuccess)
     xml = REXML::Document.new(@caller.response.body)
     xpath = '/multistatus/response/propstat/prop/current-user-principal/href'
     href = xml.elements[xpath].text
@@ -86,14 +86,16 @@ class ICCalListGetter
 
     path = '/' + userId + '/calendars/'
     @caller.request(req, path)
-    raise @caller.response.body if (@caller.response.class != Net::HTTPSuccess)
+    raise @caller.response.body unless @caller.response.is_a?(Net::HTTPSuccess)
     xml = REXML::Document.new(@caller.response.body)
     result = Array.new
     xml.elements.each('/multistatus/response') do |elm|
       e = elm.elements
-      item = { 'name' => e['propstat/prop/displayname'].text,
-               'href' => @caller.uriPath + e['href'].text }
-      result << item
+      if e['propstat/prop/displayname'] && e['href'] then
+        item = { 'name' => e['propstat/prop/displayname'].text,
+                 'href' => @caller.uriPath + e['href'].text }
+        result << item
+      end
     end
     return result
   end
