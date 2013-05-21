@@ -26,7 +26,7 @@ class ReqCaller
   attr_reader :uriPath
 
   # コンストラクタ
-  # serverNum は文字列で '01'〜'10'のいずれか
+  # serverNum は文字列で '01'～'10'のいずれか
   def initialize(appleId, password, serverNum='01')
     @appleId = appleId
     @password = password
