@@ -37,7 +37,10 @@ class ReqCaller
   # data -- 送信データ  / path -- 送信先URIのパス部分
   def request(data, path='/')
     uri = URI.parse(@uriPath + path)
-    req = Net::HTTP::Propfind.new(uri.path, {'Depth' => '1'})
+    req = Net::HTTP::Propfind.new(uri.path, {
+      'Depth' => '1',
+      'User-Agent' => 'Ruby/#{RUBY_VERSION}'
+    })
     req.basic_auth(@appleId, @password)
     http = Net::HTTP.new(uri.host, uri.port)
     if uri.scheme == "https"
