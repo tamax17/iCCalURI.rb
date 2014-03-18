@@ -3,7 +3,8 @@
 #
 # = iCloud の CalDAV URI を取得するスクリプト
 #
-# Copyright:: Copyright (c) 2012 MACHIDA 'matchy' Hideki
+# Copyright:: Copyright (c) 2012,2014 MACHIDA 'matchy' Hideki
+# Copyright:: Copyright (c) 2014 Tats Shibata (Thanks)
 # License:: Ruby ライセンスに準拠
 # 
 # == Examples
