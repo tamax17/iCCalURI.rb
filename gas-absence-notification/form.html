@@ -202,8 +202,8 @@
         <div class="text-center">
           <button type="submit" class="btn btn-primary btn-submit">
             <span class="submit-text">
-              <i class="bi bi-send"></i>
-              欠席連絡を送信
+              <i class="bi bi-check-circle"></i>
+              入力内容を確認
             </span>
             <span class="loading">
               <span class="spinner-border spinner-border-sm me-2" role="status"></span>
@@ -215,6 +215,40 @@
         <!-- 結果表示エリア -->
         <div id="resultMessage" class="result-message"></div>
       </form>
+    </div>
+
+    <!-- 確認画面モーダル -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmModalLabel">
+              <i class="bi bi-check-circle text-primary"></i>
+              送信内容の確認
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle"></i>
+              以下の内容で欠席連絡を送信します。内容に間違いがないかご確認ください。
+            </div>
+            
+            <!-- 確認内容表示エリア -->
+            <div id="confirmContent"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="bi bi-arrow-left"></i>
+              修正する
+            </button>
+            <button type="button" class="btn btn-primary" id="finalSubmitBtn">
+              <i class="bi bi-send"></i>
+              送信する
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -232,7 +266,15 @@
       initializeDateInputs();
       setupFormValidation();
       setupStudentIdInput();
+      setupConfirmModal();
     });
+
+    // 確認モーダルの設定
+    function setupConfirmModal() {
+      document.getElementById('finalSubmitBtn').addEventListener('click', function() {
+        performActualSubmit();
+      });
+    }
 
     // 授業情報を読み込む
     function loadCourses() {
@@ -329,7 +371,7 @@
       });
     }
 
-    // フォーム送信処理
+    // フォーム送信処理（確認画面表示）
     function submitForm() {
       // バリデーション
       const studentId = document.getElementById('studentId').value.trim();
@@ -366,19 +408,117 @@
         return;
       }
 
-      isSubmitting = true;
-      showLoading(true);
+      // 確認画面を表示
+      showConfirmModal();
+    }
 
-      // フォームデータの取得
-      const formData = {
-        studentId,
-        studentName,
-        studentEmail,
-        startDate,
-        endDate,
-        reason: document.getElementById('reason').value.trim(),
-        subjects: Array.from(selectedSubjects).map(cb => cb.value)
+    // 確認画面表示
+    function showConfirmModal() {
+      const studentId = document.getElementById('studentId').value.trim();
+      const studentName = document.getElementById('studentName').value.trim();
+      const studentEmail = document.getElementById('studentEmail').value.trim();
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const reason = document.getElementById('reason').value.trim();
+      const selectedSubjects = Array.from(document.querySelectorAll('input[name="subjects"]:checked'));
+
+      // 日付のフォーマット
+      const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('ja-JP', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          weekday: 'short'
+        });
       };
+
+      // 確認画面の内容を生成
+      let confirmContent = `
+        <div class="row">
+          <div class="col-md-6">
+            <h6 class="text-primary"><i class="bi bi-person-circle"></i> 学生情報</h6>
+            <div class="card mb-3">
+              <div class="card-body">
+                <p><strong>学生番号:</strong> ${studentId}</p>
+                <p><strong>氏名:</strong> ${studentName}</p>
+                <p><strong>メールアドレス:</strong> ${studentEmail}</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <h6 class="text-warning"><i class="bi bi-calendar-range"></i> 欠席期間</h6>
+            <div class="card mb-3">
+              <div class="card-body">
+                <p><strong>開始日:</strong> ${formatDate(startDate)}</p>
+                <p><strong>終了日:</strong> ${formatDate(endDate)}</p>
+                <p><strong>期間:</strong> ${new Date(startDate).getTime() === new Date(endDate).getTime() ? '1日間' : Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1 + '日間'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-12">
+            <h6 class="text-success"><i class="bi bi-book"></i> 欠席科目</h6>
+            <div class="card mb-3">
+              <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                  ${selectedSubjects.map(cb => {
+                    const course = courses.find(c => c.courseName === cb.value);
+                    return `<li class="mb-2">
+                      <i class="bi bi-check-circle-fill text-success"></i> 
+                      <strong>${cb.value}</strong><br>
+                      <small class="text-muted ms-3">${course ? course.teacherName + '先生' : '担当教員不明'}</small>
+                    </li>`;
+                  }).join('')}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        ${reason ? `
+        <div class="row">
+          <div class="col-12">
+            <h6 class="text-info"><i class="bi bi-chat-left-text"></i> 欠席理由</h6>
+            <div class="card">
+              <div class="card-body">
+                <p class="mb-0">${reason}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        ` : ''}
+      `;
+
+      document.getElementById('confirmContent').innerHTML = confirmContent;
+      
+      // モーダルを表示
+      const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+      confirmModal.show();
+    }
+
+    // 実際の送信処理
+    function performActualSubmit() {
+      const formData = {
+        studentId: document.getElementById('studentId').value.trim(),
+        studentName: document.getElementById('studentName').value.trim(),
+        studentEmail: document.getElementById('studentEmail').value.trim(),
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value,
+        reason: document.getElementById('reason').value.trim(),
+        subjects: Array.from(document.querySelectorAll('input[name="subjects"]:checked')).map(cb => cb.value)
+      };
+
+      isSubmitting = true;
+      
+      // モーダルを閉じる
+      const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+      confirmModal.hide();
+      
+      // ローディング表示
+      showLoading(true);
 
       // Google Apps Scriptに送信
       google.script.run
