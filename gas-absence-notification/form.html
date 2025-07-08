@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>授業欠席連絡フォーム</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,75 +12,259 @@
     body {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
-      padding: 20px 0;
+      padding: 10px 0;
+      font-size: 16px; /* iOS での zoom を防ぐため16px以上 */
+      line-height: 1.5;
     }
+    
     .form-container {
       background: white;
       border-radius: 15px;
       box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-      padding: 2rem;
-      margin: 20px auto;
+      padding: 1.5rem;
+      margin: 10px auto;
       max-width: 800px;
+      width: calc(100% - 20px);
     }
+    
     .header-section {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       padding-bottom: 1rem;
       border-bottom: 2px solid #e9ecef;
     }
-    .form-section {
-      margin-bottom: 2rem;
+    
+    .header-section h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.8rem;
     }
+    
+    .header-section p {
+      font-size: 0.9rem;
+    }
+    
+    .form-section {
+      margin-bottom: 1.5rem;
+    }
+    
     .section-title {
       color: #495057;
       font-weight: 600;
       margin-bottom: 1rem;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      font-size: 1.1rem;
     }
+    
+    .section-title i {
+      font-size: 1.2rem;
+    }
+    
+    /* フォーム要素の調整 */
+    .form-control, .form-select {
+      font-size: 16px; /* iOS での zoom を防ぐ */
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+      transition: border-color 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .form-label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+    
+    .form-text {
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+    
+    /* チェックボックスグリッドの調整 */
     .checkbox-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 10px;
+      grid-template-columns: 1fr;
+      gap: 12px;
       margin-top: 1rem;
     }
+    
     .form-check {
       background: #f8f9fa;
-      border: 1px solid #dee2e6;
-      border-radius: 8px;
-      padding: 10px;
+      border: 2px solid #dee2e6;
+      border-radius: 12px;
+      padding: 16px;
       transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
     }
-    .form-check:hover {
+    
+    .form-check:active {
+      transform: scale(0.98);
+    }
+    
+    .form-check:hover, .form-check:focus-within {
       background: #e9ecef;
       border-color: #6c757d;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
+    
+    .form-check-input {
+      width: 20px;
+      height: 20px;
+      margin-right: 12px;
+      margin-top: 0;
+      flex-shrink: 0;
+    }
+    
     .form-check-input:checked + .form-check-label {
       font-weight: 600;
       color: #0d6efd;
     }
+    
+    .form-check-label {
+      margin-bottom: 0;
+      cursor: pointer;
+      flex: 1;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+    
+    /* ボタンの調整 */
+    .btn {
+      font-size: 16px;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-weight: 600;
+      min-height: 48px; /* タッチターゲットサイズ */
+    }
+    
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: 14px;
+      min-height: 40px;
+    }
+    
     .btn-submit {
       background: linear-gradient(45deg, #667eea, #764ba2);
       border: none;
-      padding: 12px 40px;
-      border-radius: 25px;
-      font-weight: 600;
+      padding: 16px 40px;
+      width: 100%;
+      font-size: 1.1rem;
       transition: all 0.3s ease;
     }
-    .btn-submit:hover {
-      transform: translateY(-2px);
+    
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-1px);
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
+    
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+    
     .loading {
       display: none;
     }
+    
     .result-message {
       display: none;
       margin-top: 1rem;
     }
+    
     .required {
       color: #dc3545;
+    }
+    
+    /* スマホ向けの追加調整 */
+    @media (min-width: 576px) {
+      .checkbox-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      }
+    }
+    
+    @media (min-width: 768px) {
+      body {
+        padding: 20px 0;
+      }
+      
+      .form-container {
+        padding: 2rem;
+        margin: 20px auto;
+      }
+      
+      .form-section {
+        margin-bottom: 2rem;
+      }
+      
+      .header-section {
+        margin-bottom: 2rem;
+      }
+      
+      .header-section h1 {
+        font-size: 2rem;
+      }
+      
+      .btn-submit {
+        width: auto;
+        padding: 12px 40px;
+      }
+    }
+    
+    /* タッチデバイス向けの調整 */
+    @media (hover: none) and (pointer: coarse) {
+      .form-check:hover {
+        background: #f8f9fa;
+        border-color: #dee2e6;
+        box-shadow: none;
+      }
+      
+      .btn-submit:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+    
+    /* 縦向きスマホでの調整 */
+    @media (max-width: 576px) and (orientation: portrait) {
+      .container {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      
+      .section-title {
+        font-size: 1rem;
+        flex-wrap: wrap;
+      }
+    }
+    
+    /* 横向きスマホでの調整 */
+    @media (max-width: 767px) and (orientation: landscape) {
+      body {
+        padding: 5px 0;
+      }
+      
+      .form-container {
+        margin: 5px auto;
+        padding: 1rem;
+      }
+      
+      .header-section {
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+      }
+      
+      .form-section {
+        margin-bottom: 1rem;
+      }
     }
   </style>
 </head>
@@ -107,19 +291,21 @@
             学生情報
           </h3>
           <div class="row">
-            <div class="col-md-6 mb-3">
+            <div class="col-sm-6 mb-3">
               <label for="studentId" class="form-label">
                 学生番号 <span class="required">*</span>
               </label>
               <input type="text" class="form-control" id="studentId" name="studentId" required 
-                     placeholder="例: 2024001" maxlength="10">
+                     placeholder="例: 2024001" maxlength="10" 
+                     inputmode="numeric" pattern="[0-9]*" autocomplete="off">
             </div>
-            <div class="col-md-6 mb-3">
+            <div class="col-sm-6 mb-3">
               <label for="studentName" class="form-label">
                 氏名 <span class="required">*</span>
               </label>
               <input type="text" class="form-control" id="studentName" name="studentName" required 
-                     placeholder="例: 山田太郎" maxlength="50">
+                     placeholder="例: 山田太郎" maxlength="50" 
+                     autocomplete="name" autocapitalize="words">
             </div>
           </div>
           <div class="row">
@@ -128,7 +314,8 @@
                 メールアドレス <span class="required">*</span>
               </label>
               <input type="email" class="form-control" id="studentEmail" name="studentEmail" required 
-                     placeholder="例: yamada@hiroshima-u.ac.jp" maxlength="100">
+                     placeholder="例: yamada@hiroshima-u.ac.jp" maxlength="100"
+                     inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false">
               <div class="form-text">教員からの返信や確認連絡に使用されます。</div>
             </div>
           </div>
@@ -141,17 +328,19 @@
             欠席期間
           </h3>
           <div class="row">
-            <div class="col-md-6 mb-3">
+            <div class="col-sm-6 mb-3">
               <label for="startDate" class="form-label">
                 欠席開始日 <span class="required">*</span>
               </label>
-              <input type="date" class="form-control" id="startDate" name="startDate" required>
+              <input type="date" class="form-control" id="startDate" name="startDate" required 
+                     autocomplete="off">
             </div>
-            <div class="col-md-6 mb-3">
+            <div class="col-sm-6 mb-3">
               <label for="endDate" class="form-label">
                 欠席終了日 <span class="required">*</span>
               </label>
-              <input type="date" class="form-control" id="endDate" name="endDate" required>
+              <input type="date" class="form-control" id="endDate" name="endDate" required 
+                     autocomplete="off">
             </div>
           </div>
         </div>
@@ -163,7 +352,8 @@
             欠席理由
           </h3>
           <textarea class="form-control" id="reason" name="reason" rows="3" 
-                    placeholder="欠席理由を入力してください（任意）" maxlength="500"></textarea>
+                    placeholder="欠席理由を入力してください（任意）" maxlength="500"
+                    autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
           <div class="form-text">任意入力です。病気、家庭の事情など、簡潔に記入してください。</div>
         </div>
 
@@ -229,6 +419,7 @@
       loadCourses();
       initializeDateInputs();
       setupFormValidation();
+      setupMobileOptimizations();
     });
 
     // 授業情報を読み込む
@@ -472,6 +663,59 @@
       document.querySelectorAll('input[name="subjects"]').forEach(checkbox => {
         checkbox.checked = false;
       });
+    }
+
+    // スマホ向けの最適化
+    function setupMobileOptimizations() {
+      // iOS Safariでのviewport問題の対応
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        document.addEventListener('focusin', function(e) {
+          if (e.target.matches('input, textarea, select')) {
+            setTimeout(() => {
+              e.target.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center',
+                inline: 'nearest'
+              });
+            }, 300);
+          }
+        });
+
+        document.addEventListener('focusout', function(e) {
+          if (e.target.matches('input, textarea, select')) {
+            setTimeout(() => {
+              window.scrollTo(0, window.scrollY);
+            }, 100);
+          }
+        });
+      }
+
+      // チェックボックスのタッチ操作改善
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.form-check')) {
+          const checkbox = e.target.closest('.form-check').querySelector('input[type="checkbox"]');
+          if (checkbox && e.target !== checkbox) {
+            checkbox.click();
+          }
+        }
+      });
+
+      // 送信ボタンの二重タップ防止
+      const submitButton = document.querySelector('.btn-submit');
+      if (submitButton) {
+        submitButton.addEventListener('touchend', function(e) {
+          e.preventDefault();
+          if (!isSubmitting) {
+            setTimeout(() => {
+              submitButton.click();
+            }, 50);
+          }
+        });
+      }
+
+      // パフォーマンス向上のためのpassiveイベントリスナー
+      document.addEventListener('touchstart', function() {}, { passive: true });
+      document.addEventListener('touchmove', function() {}, { passive: true });
     }
   </script>
 </body>
