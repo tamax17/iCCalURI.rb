@@ -75,6 +75,33 @@
       box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
     }
     
+    /* バリデーションスタイル */
+    .form-control.is-valid {
+      border-color: #198754;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='m2.3 6.73.94-.94 2.94-2.94L7.5 1.68 6.44.63 3.24 3.83l-.94-.94L.63 4.56z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .form-control.is-invalid {
+      border-color: #dc3545;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 1.4 1.4 1.4-1.4M8.6 6l-1.4 1.4 1.4 1.4'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right calc(0.375em + 0.1875rem) center;
+      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+    
+    .form-control.is-valid:focus {
+      border-color: #198754;
+      box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
+    
+    .form-control.is-invalid:focus {
+      border-color: #dc3545;
+      box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
     .form-label {
       font-weight: 600;
       margin-bottom: 0.5rem;
@@ -296,8 +323,10 @@
                 学生番号 <span class="required">*</span>
               </label>
               <input type="text" class="form-control" id="studentId" name="studentId" required 
-                     placeholder="例: 2024001" maxlength="10" 
-                     inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+                     placeholder="例: B2024001" maxlength="12" 
+                     pattern="[A-Za-z][0-9A-Za-z]*" autocomplete="off" 
+                     style="text-transform: uppercase;">
+              <div class="form-text">最初はアルファベット、その後に英数字を入力してください</div>
             </div>
             <div class="col-sm-6 mb-3">
               <label for="studentName" class="form-label">
@@ -419,6 +448,7 @@
       loadCourses();
       initializeDateInputs();
       setupFormValidation();
+      setupStudentIdInput();
       setupMobileOptimizations();
     });
 
@@ -526,6 +556,13 @@
 
       if (!studentId || !studentName || !studentEmail || !startDate || !endDate) {
         showMessage('error', '必須項目を入力してください。');
+        return false;
+      }
+
+      // 学生番号の形式チェック（最初はアルファベット、その後は英数字）
+      const studentIdRegex = /^[A-Za-z][0-9A-Za-z]*$/;
+      if (!studentIdRegex.test(studentId)) {
+        showMessage('error', '学生番号は最初にアルファベット、その後に英数字を入力してください（例: B2024001）。');
         return false;
       }
 
@@ -662,6 +699,47 @@
     function clearAllSubjects() {
       document.querySelectorAll('input[name="subjects"]').forEach(checkbox => {
         checkbox.checked = false;
+      });
+    }
+
+    // 学生番号入力の設定
+    function setupStudentIdInput() {
+      const studentIdInput = document.getElementById('studentId');
+      
+      // 入力時に自動で大文字に変換
+      studentIdInput.addEventListener('input', function(e) {
+        let value = e.target.value.toUpperCase();
+        
+        // 英数字のみ許可
+        value = value.replace(/[^A-Z0-9]/g, '');
+        
+        // 最初は必ずアルファベット
+        if (value.length > 0 && !/^[A-Z]/.test(value)) {
+          value = value.replace(/^[^A-Z]*/, '');
+        }
+        
+        e.target.value = value;
+        
+        // リアルタイムバリデーション表示
+        const isValid = /^[A-Z][0-9A-Z]*$/.test(value) && value.length >= 2;
+        if (value.length > 0) {
+          if (isValid) {
+            e.target.classList.remove('is-invalid');
+            e.target.classList.add('is-valid');
+          } else {
+            e.target.classList.remove('is-valid');
+            e.target.classList.add('is-invalid');
+          }
+        } else {
+          e.target.classList.remove('is-valid', 'is-invalid');
+        }
+      });
+      
+      // ペースト時の処理
+      studentIdInput.addEventListener('paste', function(e) {
+        setTimeout(() => {
+          e.target.dispatchEvent(new Event('input'));
+        }, 0);
       });
     }
 
