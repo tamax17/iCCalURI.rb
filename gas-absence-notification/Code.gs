@@ -4,13 +4,13 @@
  */
 
 // スプレッドシートID（実際のスプレッドシートIDに置き換えてください）
-const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+var SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
 
 // 管理者メールアドレス
-const ADMIN_EMAIL = 'tamada@hiroshima-u.ac.jp';
+var ADMIN_EMAIL = 'tamada@hiroshima-u.ac.jp';
 
 // シート名の定義
-const SHEETS = {
+var SHEETS = {
   COURSES: '授業情報',
   ABSENCES: '欠席情報'
 };
@@ -18,11 +18,23 @@ const SHEETS = {
 /**
  * Webアプリとしてアクセスされた時に実行される関数
  */
-function doGet() {
-  return HtmlService.createTemplateFromFile('form')
+function doGet(e) {
+  // iOS Safari対応：直接アクセス時はX-Frame-Optionsを設定しない
+  var isDirectAccess = e && e.parameter && e.parameter.open_direct === '1';
+  
+  var htmlOutput = HtmlService.createTemplateFromFile('form')
     .evaluate()
-    .setTitle('授業欠席連絡フォーム')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    .setTitle('授業欠席連絡フォーム');
+  
+  if (isDirectAccess) {
+    // 直接アクセス時はiframeの制限を解除
+    htmlOutput.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
+  } else {
+    // 通常アクセス時
+    htmlOutput.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+  
+  return htmlOutput;
 }
 
 /**
@@ -37,7 +49,7 @@ function include(filename) {
  */
 function initializeSheets() {
   try {
-    let spreadsheet;
+    var spreadsheet;
     
     // スプレッドシートIDが設定されていない場合、新しいスプレッドシートを作成
     if (SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID_HERE') {
@@ -49,7 +61,7 @@ function initializeSheets() {
     }
     
     // 授業情報シートの作成・初期化
-    let courseSheet = spreadsheet.getSheetByName(SHEETS.COURSES);
+    var courseSheet = spreadsheet.getSheetByName(SHEETS.COURSES);
     if (!courseSheet) {
       courseSheet = spreadsheet.insertSheet(SHEETS.COURSES);
     }
@@ -60,7 +72,7 @@ function initializeSheets() {
       courseSheet.getRange(1, 1, 1, 3).setFontWeight('bold');
       
       // サンプルデータを追加
-      const sampleCourses = [
+      var sampleCourses = [
         ['数学I', '田中太郎', 'tanaka@example.ac.jp'],
         ['物理学', '佐藤花子', 'sato@example.ac.jp'],
         ['化学', '山田次郎', 'yamada@example.ac.jp'],
@@ -71,7 +83,7 @@ function initializeSheets() {
     }
     
     // 欠席情報シートの作成・初期化
-    let absenceSheet = spreadsheet.getSheetByName(SHEETS.ABSENCES);
+    var absenceSheet = spreadsheet.getSheetByName(SHEETS.ABSENCES);
     if (!absenceSheet) {
       absenceSheet = spreadsheet.insertSheet(SHEETS.ABSENCES);
     }
@@ -94,24 +106,28 @@ function initializeSheets() {
  */
 function getCourses() {
   try {
-    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const courseSheet = spreadsheet.getSheetByName(SHEETS.COURSES);
+    var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var courseSheet = spreadsheet.getSheetByName(SHEETS.COURSES);
     
     if (!courseSheet) {
       throw new Error('授業情報シートが見つかりません');
     }
     
-    const lastRow = courseSheet.getLastRow();
+    var lastRow = courseSheet.getLastRow();
     if (lastRow <= 1) {
       return [];
     }
     
-    const data = courseSheet.getRange(2, 1, lastRow - 1, 3).getValues();
-    return data.map(row => ({
-      courseName: row[0],
-      teacherName: row[1],
-      email: row[2]
-    }));
+    var data = courseSheet.getRange(2, 1, lastRow - 1, 3).getValues();
+    var courses = [];
+    for (var i = 0; i < data.length; i++) {
+      courses.push({
+        courseName: data[i][0],
+        teacherName: data[i][1],
+        email: data[i][2]
+      });
+    }
+    return courses;
   } catch (error) {
     console.error('授業情報取得エラー:', error);
     throw new Error('授業情報の取得に失敗しました: ' + error.toString());
@@ -128,17 +144,17 @@ function submitAbsence(formData) {
       throw new Error('必須項目が入力されていません');
     }
     
-    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const absenceSheet = spreadsheet.getSheetByName(SHEETS.ABSENCES);
-    const courseSheet = spreadsheet.getSheetByName(SHEETS.COURSES);
+    var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var absenceSheet = spreadsheet.getSheetByName(SHEETS.ABSENCES);
+    var courseSheet = spreadsheet.getSheetByName(SHEETS.COURSES);
     
     if (!absenceSheet || !courseSheet) {
       throw new Error('必要なシートが見つかりません');
     }
     
     // 欠席情報をスプレッドシートに記録
-    const timestamp = new Date();
-    const subjectsText = formData.subjects.join(', ');
+    var timestamp = new Date();
+    var subjectsText = formData.subjects.join(', ');
     
     absenceSheet.appendRow([
       timestamp,
@@ -151,19 +167,21 @@ function submitAbsence(formData) {
     ]);
     
     // 授業情報を取得
-    const courses = getCourses();
-    const courseMap = {};
-    courses.forEach(course => {
+    var courses = getCourses();
+    var courseMap = {};
+    for (var i = 0; i < courses.length; i++) {
+      var course = courses[i];
       courseMap[course.courseName] = course;
-    });
+    }
     
     // 選択された科目の担当教員にメールを送信
-    const emailsSent = [];
-    const emailsNotSent = [];
+    var emailsSent = [];
+    var emailsNotSent = [];
     
-    for (const subject of formData.subjects) {
+    for (var j = 0; j < formData.subjects.length; j++) {
+      var subject = formData.subjects[j];
       if (courseMap[subject]) {
-        const course = courseMap[subject];
+        var course = courseMap[subject];
         try {
           sendAbsenceEmail(course, formData);
           emailsSent.push(subject + ' (' + course.teacherName + ')');
@@ -203,33 +221,23 @@ function submitAbsence(formData) {
  * 担当教員にメールを送信する関数
  */
 function sendAbsenceEmail(course, formData) {
-  const subject = `【欠席連絡】${course.courseName} - ${formData.studentName}さん`;
+  var subject = '【欠席連絡】' + course.courseName + ' - ' + formData.studentName + 'さん';
   
-  const body = `
-${course.teacherName}先生
-
-いつもお世話になっております。
-
-以下の学生より授業の欠席連絡がありましたのでお知らせいたします。
-
-【学生情報】
-学生番号: ${formData.studentId}
-氏名: ${formData.studentName}
-
-【欠席情報】
-科目名: ${course.courseName}
-欠席期間: ${formData.startDate} ～ ${formData.endDate}
-
-【欠席理由】
-${formData.reason || '記載なし'}
-
-何かご不明な点がございましたら、学生に直接お問い合わせください。
-
-よろしくお願いいたします。
-
----
-このメールは授業欠席連絡システムから自動送信されました。
-`;
+  var body = course.teacherName + '先生\n\n' +
+    'いつもお世話になっております。\n\n' +
+    '以下の学生より授業の欠席連絡がありましたのでお知らせいたします。\n\n' +
+    '【学生情報】\n' +
+    '学生番号: ' + formData.studentId + '\n' +
+    '氏名: ' + formData.studentName + '\n\n' +
+    '【欠席情報】\n' +
+    '科目名: ' + course.courseName + '\n' +
+    '欠席期間: ' + formData.startDate + ' ～ ' + formData.endDate + '\n\n' +
+    '【欠席理由】\n' +
+    (formData.reason || '記載なし') + '\n\n' +
+    '何かご不明な点がございましたら、学生に直接お問い合わせください。\n\n' +
+    'よろしくお願いいたします。\n\n' +
+    '---\n' +
+    'このメールは授業欠席連絡システムから自動送信されました。';
 
   try {
     MailApp.sendEmail({
@@ -250,8 +258,8 @@ ${formData.reason || '記載なし'}
  */
 function addCourse(courseName, teacherName, email) {
   try {
-    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const courseSheet = spreadsheet.getSheetByName(SHEETS.COURSES);
+    var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var courseSheet = spreadsheet.getSheetByName(SHEETS.COURSES);
     
     if (!courseSheet) {
       throw new Error('授業情報シートが見つかりません');
@@ -269,47 +277,38 @@ function addCourse(courseName, teacherName, email) {
  * 管理者に欠席情報を通知する関数
  */
 function sendAdminNotification(formData, emailsSent, emailsNotSent) {
-  const subject = `【欠席連絡システム】新しい欠席届が提出されました - ${formData.studentName}さん`;
+  var subject = '【欠席連絡システム】新しい欠席届が提出されました - ' + formData.studentName + 'さん';
   
-  let body = `
-欠席連絡システムから新しい欠席届が提出されました。
-
-【学生情報】
-学生番号: ${formData.studentId}
-氏名: ${formData.studentName}
-メールアドレス: ${formData.studentEmail}
-
-【欠席情報】
-欠席期間: ${formData.startDate} ～ ${formData.endDate}
-欠席理由: ${formData.reason || '記載なし'}
-
-【欠席科目】
-${formData.subjects.join('\n')}
-
-【メール送信結果】
-`;
+  var body = '欠席連絡システムから新しい欠席届が提出されました。\n\n' +
+    '【学生情報】\n' +
+    '学生番号: ' + formData.studentId + '\n' +
+    '氏名: ' + formData.studentName + '\n' +
+    'メールアドレス: ' + formData.studentEmail + '\n\n' +
+    '【欠席情報】\n' +
+    '欠席期間: ' + formData.startDate + ' ～ ' + formData.endDate + '\n' +
+    '欠席理由: ' + (formData.reason || '記載なし') + '\n\n' +
+    '【欠席科目】\n' +
+    formData.subjects.join('\n') + '\n\n' +
+    '【メール送信結果】\n';
 
   if (emailsSent && emailsSent.length > 0) {
-    body += `
-✅ 送信完了:
-${emailsSent.map(item => '  - ' + item).join('\n')}
-`;
+    body += '\n✅ 送信完了:\n';
+    for (var i = 0; i < emailsSent.length; i++) {
+      body += '  - ' + emailsSent[i] + '\n';
+    }
   }
 
   if (emailsNotSent && emailsNotSent.length > 0) {
-    body += `
-❌ 送信失敗:
-${emailsNotSent.map(item => '  - ' + item).join('\n')}
-`;
+    body += '\n❌ 送信失敗:\n';
+    for (var j = 0; j < emailsNotSent.length; j++) {
+      body += '  - ' + emailsNotSent[j] + '\n';
+    }
   }
 
-  body += `
-詳細はスプレッドシートの「欠席情報」シートをご確認ください。
-
----
-このメールは授業欠席連絡システムから自動送信されました。
-提出日時: ${new Date().toLocaleString('ja-JP')}
-`;
+  body += '\n詳細はスプレッドシートの「欠席情報」シートをご確認ください。\n\n' +
+    '---\n' +
+    'このメールは授業欠席連絡システムから自動送信されました。\n' +
+    '提出日時: ' + new Date().toLocaleString('ja-JP');
 
   try {
     MailApp.sendEmail({
@@ -332,12 +331,12 @@ function testSystem() {
   console.log('システムテストを開始します...');
   
   // シート初期化テスト
-  const initResult = initializeSheets();
+  var initResult = initializeSheets();
   console.log('シート初期化結果:', initResult);
   
   // 授業情報取得テスト
   try {
-    const courses = getCourses();
+    var courses = getCourses();
     console.log('取得した授業情報:', courses);
   } catch (error) {
     console.error('授業情報取得テストエラー:', error);

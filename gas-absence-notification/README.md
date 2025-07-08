@@ -224,6 +224,33 @@ A: Webアプリのデプロイ設定で「アクセスできるユーザー」�
 - ✅ iOS特有のviewport問題に対応
 - ✅ タッチイベントの最適化
 - ✅ 古いiOSバージョンでのフォールバック機能
+- ✅ iframe制限回避システム
+- ✅ 自動的な代替アクセス提案機能
+
+### iOS Safari で開けない場合の解決方法
+
+#### **方法1: 自動提案の利用**
+1. iOS Safariでアクセス
+2. 「iOS Safariをご使用の場合」の通知が表示
+3. 「新しいタブで開く」ボタンをタップ
+
+#### **方法2: Safari設定の変更**
+1. iPhone「設定」→「Safari」
+2. 「サイト越えトラッキングを防ぐ」→ オフ
+3. 「すべてのCookieをブロック」→ オフ
+4. Safari完全終了後、再アクセス
+
+#### **方法3: 直接URLアクセス**
+WebアプリURLの末尾に `?open_direct=1` を追加
+```
+例: https://script.google.com/macros/s/YOUR_ID/exec?open_direct=1
+```
+
+#### **方法4: 代替ブラウザの使用**
+- iOS Chrome
+- Firefox
+- Edge
+など他のブラウザを利用
 
 ## カスタマイズ
 
@@ -248,6 +275,13 @@ A: Webアプリのデプロイ設定で「アクセスできるユーザー」�
 - 実行環境（ブラウザ、OS等）
 
 ## 更新履歴
+
+- v1.2.3: iOS Safari 完全対応
+  - iframe制限回避機能の追加
+  - iOS Safari自動検出と代替アクセス機能
+  - 「新しいタブで開く」機能実装
+  - Google Apps Script側のES5完全対応
+  - Content Security Policy最適化
 
 - v1.2.2: iOS Safari 互換性改善
   - ES6からES5への変換（アロー関数除去）
