@@ -287,18 +287,17 @@
 
     // 日付入力の初期化
     function initializeDateInputs() {
-      // 1週間前から今日までの範囲で開始日を選択可能
+      // 開始日は1週間前から制限なし（過去の欠席と予定された欠席の両方に対応）
       const today = new Date();
       const oneWeekAgo = new Date(today);
       oneWeekAgo.setDate(today.getDate() - 7);
       
-      const todayStr = today.toISOString().split('T')[0];
       const oneWeekAgoStr = oneWeekAgo.toISOString().split('T')[0];
       
-      // 開始日の制限を設定（1週間前から今日まで）
+      // 開始日の制限を設定（1週間前以降なら制限なし）
       const startDateInput = document.getElementById('startDate');
       startDateInput.setAttribute('min', oneWeekAgoStr);
-      startDateInput.setAttribute('max', todayStr);
+      // 最大値制限は削除（未来の欠席予定も入力可能）
       
       // 開始日が変更されたら終了日の最小値を更新
       startDateInput.addEventListener('change', function() {
