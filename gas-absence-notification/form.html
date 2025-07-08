@@ -122,6 +122,16 @@
                      placeholder="例: 山田太郎" maxlength="50">
             </div>
           </div>
+          <div class="row">
+            <div class="col-12 mb-3">
+              <label for="studentEmail" class="form-label">
+                メールアドレス <span class="required">*</span>
+              </label>
+              <input type="email" class="form-control" id="studentEmail" name="studentEmail" required 
+                     placeholder="例: yamada@hiroshima-u.ac.jp" maxlength="100">
+              <div class="form-text">教員からの返信や確認連絡に使用されます。</div>
+            </div>
+          </div>
         </div>
 
         <!-- 欠席期間セクション -->
@@ -318,12 +328,20 @@
     function validateForm() {
       const studentId = document.getElementById('studentId').value.trim();
       const studentName = document.getElementById('studentName').value.trim();
+      const studentEmail = document.getElementById('studentEmail').value.trim();
       const startDate = document.getElementById('startDate').value;
       const endDate = document.getElementById('endDate').value;
       const selectedSubjects = document.querySelectorAll('input[name="subjects"]:checked');
 
-      if (!studentId || !studentName || !startDate || !endDate) {
+      if (!studentId || !studentName || !studentEmail || !startDate || !endDate) {
         showMessage('error', '必須項目を入力してください。');
+        return false;
+      }
+
+      // メールアドレスの形式チェック
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(studentEmail)) {
+        showMessage('error', '正しいメールアドレスを入力してください。');
         return false;
       }
 
@@ -348,6 +366,7 @@
       return {
         studentId: document.getElementById('studentId').value.trim(),
         studentName: document.getElementById('studentName').value.trim(),
+        studentEmail: document.getElementById('studentEmail').value.trim(),
         startDate: document.getElementById('startDate').value,
         endDate: document.getElementById('endDate').value,
         reason: document.getElementById('reason').value.trim(),

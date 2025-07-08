@@ -6,6 +6,9 @@
 // スプレッドシートID（実際のスプレッドシートIDに置き換えてください）
 const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
 
+// 管理者メールアドレス
+const ADMIN_EMAIL = 'tamada@hiroshima-u.ac.jp';
+
 // シート名の定義
 const SHEETS = {
   COURSES: '授業情報',
@@ -75,8 +78,8 @@ function initializeSheets() {
     
     // 欠席情報シートのヘッダーを設定
     if (absenceSheet.getLastRow() === 0) {
-      absenceSheet.getRange(1, 1, 1, 6).setValues([['提出日時', '学生番号', '氏名', '欠席開始日', '欠席終了日', '欠席科目']]);
-      absenceSheet.getRange(1, 1, 1, 6).setFontWeight('bold');
+      absenceSheet.getRange(1, 1, 1, 7).setValues([['提出日時', '学生番号', '氏名', 'メールアドレス', '欠席開始日', '欠席終了日', '欠席科目']]);
+      absenceSheet.getRange(1, 1, 1, 7).setFontWeight('bold');
     }
     
     return { success: true, spreadsheetId: spreadsheet.getId() };
@@ -121,7 +124,7 @@ function getCourses() {
 function submitAbsence(formData) {
   try {
     // フォームデータの検証
-    if (!formData.studentId || !formData.studentName || !formData.startDate || !formData.endDate || !formData.subjects || formData.subjects.length === 0) {
+    if (!formData.studentId || !formData.studentName || !formData.studentEmail || !formData.startDate || !formData.endDate || !formData.subjects || formData.subjects.length === 0) {
       throw new Error('必須項目が入力されていません');
     }
     
@@ -141,6 +144,7 @@ function submitAbsence(formData) {
       timestamp,
       formData.studentId,
       formData.studentName,
+      formData.studentEmail,
       formData.startDate,
       formData.endDate,
       subjectsText
@@ -172,6 +176,13 @@ function submitAbsence(formData) {
       }
     }
     
+    // 管理者に通知メールを送信
+    try {
+      sendAdminNotification(formData, emailsSent, emailsNotSent);
+    } catch (adminEmailError) {
+      console.error('管理者への通知メール送信エラー:', adminEmailError);
+    }
+
     return {
       success: true,
       message: '欠席連絡を処理しました',
@@ -224,7 +235,8 @@ ${formData.reason || '記載なし'}
     MailApp.sendEmail({
       to: course.email,
       subject: subject,
-      body: body
+      body: body,
+      replyTo: formData.studentEmail
     });
     console.log(`メール送信完了: ${course.teacherName}先生 (${course.email})`);
   } catch (error) {
@@ -250,6 +262,66 @@ function addCourse(courseName, teacherName, email) {
   } catch (error) {
     console.error('授業追加エラー:', error);
     return { success: false, error: error.toString() };
+  }
+}
+
+/**
+ * 管理者に欠席情報を通知する関数
+ */
+function sendAdminNotification(formData, emailsSent, emailsNotSent) {
+  const subject = `【欠席連絡システム】新しい欠席届が提出されました - ${formData.studentName}さん`;
+  
+  let body = `
+欠席連絡システムから新しい欠席届が提出されました。
+
+【学生情報】
+学生番号: ${formData.studentId}
+氏名: ${formData.studentName}
+メールアドレス: ${formData.studentEmail}
+
+【欠席情報】
+欠席期間: ${formData.startDate} ～ ${formData.endDate}
+欠席理由: ${formData.reason || '記載なし'}
+
+【欠席科目】
+${formData.subjects.join('\n')}
+
+【メール送信結果】
+`;
+
+  if (emailsSent && emailsSent.length > 0) {
+    body += `
+✅ 送信完了:
+${emailsSent.map(item => '  - ' + item).join('\n')}
+`;
+  }
+
+  if (emailsNotSent && emailsNotSent.length > 0) {
+    body += `
+❌ 送信失敗:
+${emailsNotSent.map(item => '  - ' + item).join('\n')}
+`;
+  }
+
+  body += `
+詳細はスプレッドシートの「欠席情報」シートをご確認ください。
+
+---
+このメールは授業欠席連絡システムから自動送信されました。
+提出日時: ${new Date().toLocaleString('ja-JP')}
+`;
+
+  try {
+    MailApp.sendEmail({
+      to: ADMIN_EMAIL,
+      subject: subject,
+      body: body,
+      replyTo: formData.studentEmail
+    });
+    console.log(`管理者への通知メール送信完了: ${ADMIN_EMAIL}`);
+  } catch (error) {
+    console.error('管理者への通知メール送信失敗:', error);
+    throw error;
   }
 }
 
