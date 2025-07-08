@@ -18,23 +18,10 @@ var SHEETS = {
 /**
  * Webアプリとしてアクセスされた時に実行される関数
  */
-function doGet(e) {
-  // iOS Safari対応：直接アクセス時はX-Frame-Optionsを設定しない
-  var isDirectAccess = e && e.parameter && e.parameter.open_direct === '1';
-  
-  var htmlOutput = HtmlService.createTemplateFromFile('form')
-    .evaluate()
-    .setTitle('授業欠席連絡フォーム');
-  
-  if (isDirectAccess) {
-    // 直接アクセス時はiframeの制限を解除
-    htmlOutput.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
-  } else {
-    // 通常アクセス時
-    htmlOutput.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-  }
-  
-  return htmlOutput;
+function doGet() {
+  return HtmlService.createTemplateFromFile('form')
+      .evaluate()
+      .setTitle('授業欠席連絡フォーム');
 }
 
 /**

@@ -2,10 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.googleusercontent.com *.gstatic.com data: blob:;">
-  <meta name="referrer" content="no-referrer-when-downgrade">
-  <meta name="format-detection" content="telephone=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>授業欠席連絡フォーム</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,294 +11,76 @@
   <style>
     body {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      background: -webkit-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
-      padding: 10px 0;
-      font-size: 16px; /* iOS での zoom を防ぐため16px以上 */
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      padding: 20px 0;
     }
-    
     .form-container {
       background: white;
       border-radius: 15px;
       box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-      padding: 1.5rem;
-      margin: 10px auto;
+      padding: 2rem;
+      margin: 20px auto;
       max-width: 800px;
-      width: calc(100% - 20px);
     }
-    
     .header-section {
       text-align: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
       padding-bottom: 1rem;
       border-bottom: 2px solid #e9ecef;
     }
-    
-    .header-section h1 {
-      font-size: 1.5rem;
-      margin-bottom: 0.8rem;
-    }
-    
-    .header-section p {
-      font-size: 0.9rem;
-    }
-    
     .form-section {
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
-    
     .section-title {
       color: #495057;
       font-weight: 600;
       margin-bottom: 1rem;
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 1.1rem;
+      gap: 10px;
     }
-    
-    .section-title i {
-      font-size: 1.2rem;
-    }
-    
-    /* フォーム要素の調整 */
-    .form-control, .form-select {
-      font-size: 16px; /* iOS での zoom を防ぐ */
-      padding: 0.75rem;
-      border-radius: 8px;
-      border: 2px solid #e9ecef;
-      transition: border-color 0.3s ease;
-    }
-    
-    .form-control:focus, .form-select:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-    }
-    
-    /* バリデーションスタイル */
-    .form-control.is-valid {
-      border-color: #198754;
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='m2.3 6.73.94-.94 2.94-2.94L7.5 1.68 6.44.63 3.24 3.83l-.94-.94L.63 4.56z'/%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right calc(0.375em + 0.1875rem) center;
-      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-    }
-    
-    .form-control.is-invalid {
-      border-color: #dc3545;
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 1.4 1.4 1.4-1.4M8.6 6l-1.4 1.4 1.4 1.4'/%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right calc(0.375em + 0.1875rem) center;
-      background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-    }
-    
-    .form-control.is-valid:focus {
-      border-color: #198754;
-      box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
-    }
-    
-    .form-control.is-invalid:focus {
-      border-color: #dc3545;
-      box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-    }
-    
-    .form-label {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      font-size: 1rem;
-    }
-    
-    .form-text {
-      font-size: 0.85rem;
-      margin-top: 0.25rem;
-    }
-    
-    /* チェックボックスグリッドの調整 */
     .checkbox-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
       margin-top: 1rem;
     }
-    
     .form-check {
       background: #f8f9fa;
-      border: 2px solid #dee2e6;
-      border-radius: 12px;
-      padding: 16px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 10px;
       transition: all 0.3s ease;
-      cursor: pointer;
-      position: relative;
-      min-height: 60px;
-      display: flex;
-      align-items: center;
     }
-    
-    .form-check:active {
-      -webkit-transform: scale(0.98);
-      transform: scale(0.98);
-    }
-    
-    .form-check:hover, .form-check:focus-within {
+    .form-check:hover {
       background: #e9ecef;
       border-color: #6c757d;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    
-    .form-check-input {
-      width: 20px;
-      height: 20px;
-      margin-right: 12px;
-      margin-top: 0;
-      flex-shrink: 0;
-    }
-    
     .form-check-input:checked + .form-check-label {
       font-weight: 600;
       color: #0d6efd;
     }
-    
-    .form-check-label {
-      margin-bottom: 0;
-      cursor: pointer;
-      flex: 1;
-      font-size: 1rem;
-      line-height: 1.4;
-    }
-    
-    /* ボタンの調整 */
-    .btn {
-      font-size: 16px;
-      padding: 12px 24px;
-      border-radius: 25px;
-      font-weight: 600;
-      min-height: 48px; /* タッチターゲットサイズ */
-    }
-    
-    .btn-sm {
-      padding: 8px 16px;
-      font-size: 14px;
-      min-height: 40px;
-    }
-    
     .btn-submit {
       background: linear-gradient(45deg, #667eea, #764ba2);
       border: none;
-      padding: 16px 40px;
-      width: 100%;
-      font-size: 1.1rem;
+      padding: 12px 40px;
+      border-radius: 25px;
+      font-weight: 600;
       transition: all 0.3s ease;
     }
-    
-    .btn-submit:hover:not(:disabled) {
-      -webkit-transform: translateY(-1px);
-      transform: translateY(-1px);
+    .btn-submit:hover {
+      transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
-    
-    .btn-submit:active {
-      -webkit-transform: translateY(0);
-      transform: translateY(0);
-    }
-    
     .loading {
       display: none;
     }
-    
     .result-message {
       display: none;
       margin-top: 1rem;
     }
-    
     .required {
       color: #dc3545;
-    }
-    
-    /* スマホ向けの追加調整 */
-    @media (min-width: 576px) {
-      .checkbox-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      }
-    }
-    
-    @media (min-width: 768px) {
-      body {
-        padding: 20px 0;
-      }
-      
-      .form-container {
-        padding: 2rem;
-        margin: 20px auto;
-      }
-      
-      .form-section {
-        margin-bottom: 2rem;
-      }
-      
-      .header-section {
-        margin-bottom: 2rem;
-      }
-      
-      .header-section h1 {
-        font-size: 2rem;
-      }
-      
-      .btn-submit {
-        width: auto;
-        padding: 12px 40px;
-      }
-    }
-    
-    /* タッチデバイス向けの調整 */
-    @media (hover: none) and (pointer: coarse) {
-      .form-check:hover {
-        background: #f8f9fa;
-        border-color: #dee2e6;
-        box-shadow: none;
-      }
-      
-      .btn-submit:hover {
-        -webkit-transform: none;
-        transform: none;
-        box-shadow: none;
-      }
-    }
-    
-    /* 縦向きスマホでの調整 */
-    @media (max-width: 576px) and (orientation: portrait) {
-      .container {
-        padding-left: 10px;
-        padding-right: 10px;
-      }
-      
-      .section-title {
-        font-size: 1rem;
-        flex-wrap: wrap;
-      }
-    }
-    
-    /* 横向きスマホでの調整 */
-    @media (max-width: 767px) and (orientation: landscape) {
-      body {
-        padding: 5px 0;
-      }
-      
-      .form-container {
-        margin: 5px auto;
-        padding: 1rem;
-      }
-      
-      .header-section {
-        margin-bottom: 1rem;
-        padding-bottom: 0.5rem;
-      }
-      
-      .form-section {
-        margin-bottom: 1rem;
-      }
     }
   </style>
 </head>
@@ -317,20 +96,6 @@
         <p class="text-muted">
           複数の授業を欠席する場合、このフォームから各担当教員に一括で連絡を送信できます。
         </p>
-        
-        <!-- iOS Safari用の代替アクセス -->
-        <div id="iosSafariNotice" class="alert alert-info mt-3" style="display: none;">
-          <div class="d-flex align-items-center">
-            <i class="bi bi-info-circle me-2"></i>
-            <div class="flex-grow-1">
-              <strong>iOS Safariをご使用の場合</strong><br>
-              <small>フォームが表示されない場合は、下のボタンをタップして新しいタブで開いてください。</small>
-            </div>
-          </div>
-          <button type="button" class="btn btn-primary btn-sm mt-2" onclick="openInNewTab()">
-            <i class="bi bi-box-arrow-up-right"></i> 新しいタブで開く
-          </button>
-        </div>
       </div>
 
       <!-- 欠席連絡フォーム -->
@@ -342,23 +107,21 @@
             学生情報
           </h3>
           <div class="row">
-            <div class="col-sm-6 mb-3">
+            <div class="col-md-6 mb-3">
               <label for="studentId" class="form-label">
                 学生番号 <span class="required">*</span>
               </label>
               <input type="text" class="form-control" id="studentId" name="studentId" required 
                      placeholder="例: B2024001" maxlength="12" 
-                     autocomplete="off" autocapitalize="characters" 
-                     style="text-transform: uppercase;">
+                     autocomplete="off" style="text-transform: uppercase;">
               <div class="form-text">最初はアルファベット、その後に英数字を入力してください</div>
             </div>
-            <div class="col-sm-6 mb-3">
+            <div class="col-md-6 mb-3">
               <label for="studentName" class="form-label">
                 氏名 <span class="required">*</span>
               </label>
               <input type="text" class="form-control" id="studentName" name="studentName" required 
-                     placeholder="例: 山田太郎" maxlength="50" 
-                     autocomplete="name" autocapitalize="words">
+                     placeholder="例: 山田太郎" maxlength="50">
             </div>
           </div>
           <div class="row">
@@ -367,8 +130,7 @@
                 メールアドレス <span class="required">*</span>
               </label>
               <input type="email" class="form-control" id="studentEmail" name="studentEmail" required 
-                     placeholder="例: yamada@hiroshima-u.ac.jp" maxlength="100"
-                     inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false">
+                     placeholder="例: yamada@hiroshima-u.ac.jp" maxlength="100">
               <div class="form-text">教員からの返信や確認連絡に使用されます。</div>
             </div>
           </div>
@@ -381,19 +143,17 @@
             欠席期間
           </h3>
           <div class="row">
-            <div class="col-sm-6 mb-3">
+            <div class="col-md-6 mb-3">
               <label for="startDate" class="form-label">
                 欠席開始日 <span class="required">*</span>
               </label>
-              <input type="date" class="form-control" id="startDate" name="startDate" required 
-                     autocomplete="off">
+              <input type="date" class="form-control" id="startDate" name="startDate" required>
             </div>
-            <div class="col-sm-6 mb-3">
+            <div class="col-md-6 mb-3">
               <label for="endDate" class="form-label">
                 欠席終了日 <span class="required">*</span>
               </label>
-              <input type="date" class="form-control" id="endDate" name="endDate" required 
-                     autocomplete="off">
+              <input type="date" class="form-control" id="endDate" name="endDate" required>
             </div>
           </div>
         </div>
@@ -405,8 +165,7 @@
             欠席理由
           </h3>
           <textarea class="form-control" id="reason" name="reason" rows="3" 
-                    placeholder="欠席理由を入力してください（任意）" maxlength="500"
-                    autocomplete="off" autocapitalize="sentences" spellcheck="true"></textarea>
+                    placeholder="欠席理由を入力してください（任意）" maxlength="500"></textarea>
           <div class="form-text">任意入力です。病気、家庭の事情など、簡潔に記入してください。</div>
         </div>
 
@@ -467,103 +226,12 @@
     let courses = [];
     let isSubmitting = false;
 
-    // iOS Safari検出
-    function isiOSSafari() {
-      var ua = navigator.userAgent;
-      var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-      var isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua);
-      return isIOS && isSafari;
-    }
-
-    // 新しいタブで開く
-    function openInNewTab() {
-      var currentUrl = window.location.href;
-      // URLに特別なパラメータを追加してiframe回避を試行
-      var newUrl = currentUrl + (currentUrl.indexOf('?') > -1 ? '&' : '?') + 'open_direct=1';
-      window.open(newUrl, '_blank');
-    }
-
-    // iOS Safari 特有の問題を回避
-    function fixiOSSafariIssues() {
-      // iOS Safari検出時の通知表示
-      if (isiOSSafari()) {
-        console.log('iOS Safari detected');
-        var notice = document.getElementById('iosSafariNotice');
-        if (notice) {
-          notice.style.display = 'block';
-        }
-        
-        // iframe内で実行されているかチェック
-        if (window.self !== window.top) {
-          console.log('iOS Safari: Running in iframe, showing notice...');
-          // 5秒後に通知を強調表示
-          setTimeout(function() {
-            if (notice) {
-              notice.classList.remove('alert-info');
-              notice.classList.add('alert-warning');
-              notice.innerHTML = 
-                '<div class="d-flex align-items-center">' +
-                  '<i class="bi bi-exclamation-triangle me-2"></i>' +
-                  '<div class="flex-grow-1">' +
-                    '<strong>フォームが読み込まれない場合</strong><br>' +
-                    '<small>下のボタンをタップして新しいタブで開いてください。</small>' +
-                  '</div>' +
-                '</div>' +
-                '<button type="button" class="btn btn-warning btn-sm mt-2" onclick="openInNewTab()">' +
-                  '<i class="bi bi-box-arrow-up-right"></i> 新しいタブで開く' +
-                '</button>';
-            }
-          }, 5000);
-        }
-      }
-      
-      // iframe sandbox対応
-      if (window.self !== window.top) {
-        console.log('iOS Safari: Running in iframe, applying fixes...');
-        
-        try {
-          if (window.parent && window.parent.location) {
-            // parent windowとの通信を確立
-            window.parent.postMessage('gas-app-ready', '*');
-          }
-        } catch (e) {
-          console.warn('iOS Safari: Cross-origin frame detected');
-        }
-      }
-      
-      // iOS Safari の localStorage 問題を回避
-      try {
-        localStorage.setItem('ios-safari-test', '1');
-        localStorage.removeItem('ios-safari-test');
-      } catch (e) {
-        console.warn('iOS Safari: localStorage not available, using fallback');
-        // localStorage の代替実装
-        window.localStorageFallback = {};
-      }
-      
-      // Cookie設定の問題を回避
-      document.cookie = 'ios-safari-test=1; SameSite=None; Secure';
-    }
-
     // ページ読み込み時の処理
     document.addEventListener('DOMContentLoaded', function() {
-      try {
-        console.log('iOS Safari compat: Starting initialization...');
-        
-        // iOS Safari 特有問題の修正
-        fixiOSSafariIssues();
-        
-        loadCourses();
-        initializeDateInputs();
-        setupFormValidation();
-        setupStudentIdInput();
-        setupMobileOptimizations();
-        console.log('iOS Safari compat: Initialization completed.');
-      } catch (error) {
-        console.error('iOS Safari compat: Initialization error:', error);
-        // エラーが発生してもページを使用可能にする
-        showMessage('error', 'システムの初期化でエラーが発生しました。ページを再読み込みしてください。');
-      }
+      loadCourses();
+      initializeDateInputs();
+      setupFormValidation();
+      setupStudentIdInput();
     });
 
     // 授業情報を読み込む
@@ -582,77 +250,105 @@
 
     // 授業情報読み込み失敗時の処理
     function onCoursesLoadError(error) {
-      console.error('iOS Safari compat: 授業情報の読み込みに失敗しました:', error);
-      var container = document.getElementById('subjectsContainer');
-      if (container) {
-        container.innerHTML = 
-          '<div class="text-center p-4 text-danger">' +
-            '<i class="bi bi-exclamation-triangle"></i>' +
-            '<p class="mt-2">授業情報の読み込みに失敗しました。<br>ページを再読み込みしてください。</p>' +
-          '</div>';
-      }
+      console.error('授業情報の読み込みに失敗しました:', error);
+      document.getElementById('subjectsContainer').innerHTML = `
+        <div class="text-center p-4 text-danger">
+          <i class="bi bi-exclamation-triangle"></i>
+          <p class="mt-2">授業情報の読み込みに失敗しました。<br>ページを再読み込みしてください。</p>
+        </div>
+      `;
     }
 
     // 科目チェックボックスを生成
     function renderSubjectsCheckboxes() {
-      var container = document.getElementById('subjectsContainer');
+      const container = document.getElementById('subjectsContainer');
       
       if (courses.length === 0) {
-        container.innerHTML = 
-          '<div class="text-center p-4 text-warning">' +
-            '<i class="bi bi-info-circle"></i>' +
-            '<p class="mt-2">授業情報が登録されていません。<br>管理者にお問い合わせください。</p>' +
-          '</div>';
+        container.innerHTML = `
+          <div class="text-center p-4 text-warning">
+            <i class="bi bi-info-circle"></i>
+            <p class="mt-2">授業情報が登録されていません。<br>管理者にお問い合わせください。</p>
+          </div>
+        `;
         return;
       }
 
-      var html = '';
-      for (var i = 0; i < courses.length; i++) {
-        var course = courses[i];
-        html += 
-          '<div class="form-check">' +
-            '<input class="form-check-input" type="checkbox" id="subject_' + i + '" ' +
-                   'name="subjects" value="' + course.courseName + '">' +
-            '<label class="form-check-label" for="subject_' + i + '">' +
-              '<strong>' + course.courseName + '</strong><br>' +
-              '<small class="text-muted">' + course.teacherName + '先生</small>' +
-            '</label>' +
-          '</div>';
-      }
-      container.innerHTML = html;
+      container.innerHTML = courses.map((course, index) => `
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="subject_${index}" 
+                 name="subjects" value="${course.courseName}">
+          <label class="form-check-label" for="subject_${index}">
+            <strong>${course.courseName}</strong><br>
+            <small class="text-muted">${course.teacherName}先生</small>
+          </label>
+        </div>
+      `).join('');
     }
 
     // 日付入力の初期化
     function initializeDateInputs() {
-      var today = new Date().toISOString().split('T')[0];
-      var startDateInput = document.getElementById('startDate');
-      var endDateInput = document.getElementById('endDate');
-      
-      if (startDateInput) startDateInput.setAttribute('min', today);
-      if (endDateInput) endDateInput.setAttribute('min', today);
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('startDate').setAttribute('min', today);
+      document.getElementById('endDate').setAttribute('min', today);
 
       // 開始日が変更されたら終了日の最小値を更新
-      if (startDateInput && endDateInput) {
-        startDateInput.addEventListener('change', function() {
-          endDateInput.setAttribute('min', this.value);
-        });
-      }
+      document.getElementById('startDate').addEventListener('change', function() {
+        document.getElementById('endDate').setAttribute('min', this.value);
+      });
     }
 
     // フォームバリデーションの設定
     function setupFormValidation() {
-      const form = document.getElementById('absenceForm');
-      form.addEventListener('submit', handleFormSubmit);
+      document.getElementById('absenceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (isSubmitting) {
+          return;
+        }
+        
+        if (this.checkValidity()) {
+          submitForm();
+        } else {
+          this.reportValidity();
+          showMessage('error', '必須項目をすべて入力してください。');
+        }
+      });
     }
 
     // フォーム送信処理
-    async function handleFormSubmit(event) {
-      event.preventDefault();
-      
-      if (isSubmitting) return;
-      
+    function submitForm() {
       // バリデーション
-      if (!validateForm()) {
+      const studentId = document.getElementById('studentId').value.trim();
+      const studentName = document.getElementById('studentName').value.trim();
+      const studentEmail = document.getElementById('studentEmail').value.trim();
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const selectedSubjects = document.querySelectorAll('input[name="subjects"]:checked');
+
+      if (!studentId || !studentName || !studentEmail || !startDate || !endDate) {
+        showMessage('error', '必須項目を入力してください。');
+        return;
+      }
+
+      // 学生番号の形式チェック（最初はアルファベット、その後は英数字）
+      if (!/^[A-Za-z][0-9A-Za-z]*$/.test(studentId)) {
+        showMessage('error', '学生番号は最初にアルファベット、その後に英数字を入力してください（例: B2024001）。');
+        return;
+      }
+
+      // メールアドレスの形式チェック
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(studentEmail)) {
+        showMessage('error', '正しいメールアドレスを入力してください。');
+        return;
+      }
+
+      if (selectedSubjects.length === 0) {
+        showMessage('error', '欠席する科目を少なくとも1つ選択してください。');
+        return;
+      }
+
+      if (new Date(startDate) > new Date(endDate)) {
+        showMessage('error', '終了日は開始日以降の日付を選択してください。');
         return;
       }
 
@@ -660,7 +356,15 @@
       showLoading(true);
 
       // フォームデータの取得
-      const formData = getFormData();
+      const formData = {
+        studentId,
+        studentName,
+        studentEmail,
+        startDate,
+        endDate,
+        reason: document.getElementById('reason').value.trim(),
+        subjects: Array.from(selectedSubjects).map(cb => cb.value)
+      };
 
       // Google Apps Scriptに送信
       google.script.run
@@ -669,65 +373,7 @@
         .submitAbsence(formData);
     }
 
-    // フォームバリデーション
-    function validateForm() {
-      var studentId = document.getElementById('studentId').value.trim();
-      var studentName = document.getElementById('studentName').value.trim();
-      var studentEmail = document.getElementById('studentEmail').value.trim();
-      var startDate = document.getElementById('startDate').value;
-      var endDate = document.getElementById('endDate').value;
-      var selectedSubjects = document.querySelectorAll('input[name="subjects"]:checked');
 
-      if (!studentId || !studentName || !studentEmail || !startDate || !endDate) {
-        showMessage('error', '必須項目を入力してください。');
-        return false;
-      }
-
-      // 学生番号の形式チェック（最初はアルファベット、その後は英数字）
-      var studentIdRegex = /^[A-Za-z][0-9A-Za-z]*$/;
-      if (!studentIdRegex.test(studentId)) {
-        showMessage('error', '学生番号は最初にアルファベット、その後に英数字を入力してください（例: B2024001）。');
-        return false;
-      }
-
-      // メールアドレスの形式チェック
-      var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(studentEmail)) {
-        showMessage('error', '正しいメールアドレスを入力してください。');
-        return false;
-      }
-
-      if (selectedSubjects.length === 0) {
-        showMessage('error', '欠席する科目を少なくとも1つ選択してください。');
-        return false;
-      }
-
-      if (new Date(startDate) > new Date(endDate)) {
-        showMessage('error', '終了日は開始日以降の日付を選択してください。');
-        return false;
-      }
-
-      return true;
-    }
-
-    // フォームデータの取得
-    function getFormData() {
-      var checkboxes = document.querySelectorAll('input[name="subjects"]:checked');
-      var selectedSubjects = [];
-      for (var i = 0; i < checkboxes.length; i++) {
-        selectedSubjects.push(checkboxes[i].value);
-      }
-
-      return {
-        studentId: document.getElementById('studentId').value.trim(),
-        studentName: document.getElementById('studentName').value.trim(),
-        studentEmail: document.getElementById('studentEmail').value.trim(),
-        startDate: document.getElementById('startDate').value,
-        endDate: document.getElementById('endDate').value,
-        reason: document.getElementById('reason').value.trim(),
-        subjects: selectedSubjects
-      };
-    }
 
     // 送信成功時の処理
     function onSubmitSuccess(result) {
@@ -762,9 +408,8 @@
         showMessage('success', message);
 
         // フォームをリセット
-        setTimeout(function() {
-          var form = document.getElementById('absenceForm');
-          if (form) form.reset();
+        setTimeout(() => {
+          document.getElementById('absenceForm').reset();
           clearAllSubjects();
         }, 2000);
 
@@ -800,56 +445,40 @@
 
     // メッセージ表示
     function showMessage(type, message) {
-      var resultDiv = document.getElementById('resultMessage');
-      if (!resultDiv) return;
+      const resultDiv = document.getElementById('resultMessage');
       
       resultDiv.innerHTML = message;
-      resultDiv.className = 'result-message alert ' + (type === 'error' ? 'alert-danger' : 'alert-success');
+      resultDiv.className = `result-message alert ${type === 'error' ? 'alert-danger' : 'alert-success'}`;
       resultDiv.style.display = 'block';
 
       // 5秒後に自動で隠す（成功時のみ）
       if (type === 'success') {
-        setTimeout(function() {
-          if (resultDiv) resultDiv.style.display = 'none';
+        setTimeout(() => {
+          resultDiv.style.display = 'none';
         }, 5000);
       }
 
       // メッセージの位置までスクロール
-      if (resultDiv.scrollIntoView) {
-        try {
-          resultDiv.scrollIntoView({ behavior: 'smooth' });
-        } catch (error) {
-          // iOS Safari フォールバック
-          resultDiv.scrollIntoView(true);
-        }
-      }
+      resultDiv.scrollIntoView({ behavior: 'smooth' });
     }
 
     // 全科目選択
     function selectAllSubjects() {
-      var checkboxes = document.querySelectorAll('input[name="subjects"]');
-      for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].checked = true;
-      }
+      document.querySelectorAll('input[name="subjects"]').forEach(cb => cb.checked = true);
     }
 
     // 全科目選択解除
     function clearAllSubjects() {
-      var checkboxes = document.querySelectorAll('input[name="subjects"]');
-      for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].checked = false;
-      }
+      document.querySelectorAll('input[name="subjects"]').forEach(cb => cb.checked = false);
     }
 
     // 学生番号入力の設定
     function setupStudentIdInput() {
-      var studentIdInput = document.getElementById('studentId');
-      
-      if (!studentIdInput) return; // 要素が見つからない場合は終了
+      const studentIdInput = document.getElementById('studentId');
       
       // 入力時に自動で大文字に変換
       studentIdInput.addEventListener('input', function(e) {
-        var value = e.target.value.toUpperCase();
+        let value = e.target.value.toUpperCase();
         
         // 英数字のみ許可
         value = value.replace(/[^A-Z0-9]/g, '');
@@ -860,110 +489,17 @@
         }
         
         e.target.value = value;
-        
-        // リアルタイムバリデーション表示
-        var isValid = /^[A-Z][0-9A-Z]*$/.test(value) && value.length >= 2;
-        if (value.length > 0) {
-          if (isValid) {
-            e.target.classList.remove('is-invalid');
-            e.target.classList.add('is-valid');
-          } else {
-            e.target.classList.remove('is-valid');
-            e.target.classList.add('is-invalid');
-          }
-        } else {
-          e.target.classList.remove('is-valid');
-          e.target.classList.remove('is-invalid');
-        }
       });
       
       // ペースト時の処理
       studentIdInput.addEventListener('paste', function(e) {
-        setTimeout(function() {
-          // iOS Safari対応
-          if (e.target.dispatchEvent) {
-            var event;
-            try {
-              event = new Event('input', { bubbles: true });
-            } catch (error) {
-              // IE対応のフォールバック
-              event = document.createEvent('Event');
-              event.initEvent('input', true, true);
-            }
-            e.target.dispatchEvent(event);
-          }
+        setTimeout(() => {
+          e.target.dispatchEvent(new Event('input', { bubbles: true }));
         }, 0);
       });
     }
 
-    // スマホ向けの最適化
-    function setupMobileOptimizations() {
-      // iOS Safariでのviewport問題の対応
-      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      if (isIOS) {
-        document.addEventListener('focusin', function(e) {
-          var target = e.target;
-          if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
-            setTimeout(function() {
-              if (target.scrollIntoView) {
-                target.scrollIntoView({ 
-                  behavior: 'smooth', 
-                  block: 'center'
-                });
-              }
-            }, 300);
-          }
-        });
 
-        document.addEventListener('focusout', function(e) {
-          var target = e.target;
-          if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
-            setTimeout(function() {
-              window.scrollTo(0, window.scrollY || window.pageYOffset || 0);
-            }, 100);
-          }
-        });
-      }
-
-      // チェックボックスのタッチ操作改善
-      document.addEventListener('click', function(e) {
-        var target = e.target;
-        var formCheck = target.closest ? target.closest('.form-check') : null;
-        if (!formCheck && target.parentNode) {
-          var parent = target.parentNode;
-          while (parent && parent.className && parent.className.indexOf('form-check') === -1) {
-            parent = parent.parentNode;
-          }
-          if (parent && parent.className && parent.className.indexOf('form-check') !== -1) {
-            formCheck = parent;
-          }
-        }
-        
-        if (formCheck) {
-          var checkbox = formCheck.querySelector('input[type="checkbox"]');
-          if (checkbox && target !== checkbox) {
-            checkbox.click();
-          }
-        }
-      });
-
-      // 送信ボタンの二重タップ防止
-      var submitButton = document.querySelector('.btn-submit');
-      if (submitButton) {
-        submitButton.addEventListener('touchend', function(e) {
-          e.preventDefault();
-          if (!isSubmitting) {
-            setTimeout(function() {
-              submitButton.click();
-            }, 50);
-          }
-        });
-      }
-
-      // パフォーマンス向上のためのpassiveイベントリスナー
-      document.addEventListener('touchstart', function() {}, { passive: true });
-      document.addEventListener('touchmove', function() {}, { passive: true });
-    }
   </script>
 </body>
 </html>
