@@ -287,13 +287,18 @@
 
     // 日付入力の初期化
     function initializeDateInputs() {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('startDate').setAttribute('min', today);
-      document.getElementById('endDate').setAttribute('min', today);
-
+      // 開始日は過去の日付も選択可能（制限なし）
+      // 終了日は開始日が選択されたら、その日以降のみ選択可能
+      
       // 開始日が変更されたら終了日の最小値を更新
       document.getElementById('startDate').addEventListener('change', function() {
-        document.getElementById('endDate').setAttribute('min', this.value);
+        const endDateInput = document.getElementById('endDate');
+        endDateInput.setAttribute('min', this.value);
+        
+        // もし終了日が開始日より前になっている場合はクリア
+        if (endDateInput.value && endDateInput.value < this.value) {
+          endDateInput.value = '';
+        }
       });
     }
 
