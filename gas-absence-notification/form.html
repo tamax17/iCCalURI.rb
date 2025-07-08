@@ -287,11 +287,21 @@
 
     // 日付入力の初期化
     function initializeDateInputs() {
-      // 開始日は過去の日付も選択可能（制限なし）
-      // 終了日は開始日が選択されたら、その日以降のみ選択可能
+      // 1週間前から今日までの範囲で開始日を選択可能
+      const today = new Date();
+      const oneWeekAgo = new Date(today);
+      oneWeekAgo.setDate(today.getDate() - 7);
+      
+      const todayStr = today.toISOString().split('T')[0];
+      const oneWeekAgoStr = oneWeekAgo.toISOString().split('T')[0];
+      
+      // 開始日の制限を設定（1週間前から今日まで）
+      const startDateInput = document.getElementById('startDate');
+      startDateInput.setAttribute('min', oneWeekAgoStr);
+      startDateInput.setAttribute('max', todayStr);
       
       // 開始日が変更されたら終了日の最小値を更新
-      document.getElementById('startDate').addEventListener('change', function() {
+      startDateInput.addEventListener('change', function() {
         const endDateInput = document.getElementById('endDate');
         endDateInput.setAttribute('min', this.value);
         
