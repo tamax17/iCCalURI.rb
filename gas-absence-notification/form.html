@@ -11,10 +11,13 @@
   <style>
     body {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: -webkit-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       padding: 10px 0;
       font-size: 16px; /* iOS での zoom を防ぐため16px以上 */
       line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     
     .form-container {
@@ -135,6 +138,7 @@
     }
     
     .form-check:active {
+      -webkit-transform: scale(0.98);
       transform: scale(0.98);
     }
     
@@ -190,11 +194,13 @@
     }
     
     .btn-submit:hover:not(:disabled) {
+      -webkit-transform: translateY(-1px);
       transform: translateY(-1px);
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
     
     .btn-submit:active {
+      -webkit-transform: translateY(0);
       transform: translateY(0);
     }
     
@@ -255,6 +261,7 @@
       }
       
       .btn-submit:hover {
+        -webkit-transform: none;
         transform: none;
         box-shadow: none;
       }
@@ -324,7 +331,7 @@
               </label>
               <input type="text" class="form-control" id="studentId" name="studentId" required 
                      placeholder="例: B2024001" maxlength="12" 
-                     pattern="[A-Za-z][0-9A-Za-z]*" autocomplete="off" 
+                     autocomplete="off" autocapitalize="characters" 
                      style="text-transform: uppercase;">
               <div class="form-text">最初はアルファベット、その後に英数字を入力してください</div>
             </div>
@@ -445,11 +452,19 @@
 
     // ページ読み込み時の処理
     document.addEventListener('DOMContentLoaded', function() {
-      loadCourses();
-      initializeDateInputs();
-      setupFormValidation();
-      setupStudentIdInput();
-      setupMobileOptimizations();
+      try {
+        console.log('iOS Safari compat: Starting initialization...');
+        loadCourses();
+        initializeDateInputs();
+        setupFormValidation();
+        setupStudentIdInput();
+        setupMobileOptimizations();
+        console.log('iOS Safari compat: Initialization completed.');
+      } catch (error) {
+        console.error('iOS Safari compat: Initialization error:', error);
+        // エラーが発生してもページを使用可能にする
+        showMessage('error', 'システムの初期化でエラーが発生しました。ページを再読み込みしてください。');
+      }
     });
 
     // 授業情報を読み込む
@@ -468,51 +483,61 @@
 
     // 授業情報読み込み失敗時の処理
     function onCoursesLoadError(error) {
-      console.error('授業情報の読み込みに失敗しました:', error);
-      document.getElementById('subjectsContainer').innerHTML = `
-        <div class="text-center p-4 text-danger">
-          <i class="bi bi-exclamation-triangle"></i>
-          <p class="mt-2">授業情報の読み込みに失敗しました。<br>ページを再読み込みしてください。</p>
-        </div>
-      `;
+      console.error('iOS Safari compat: 授業情報の読み込みに失敗しました:', error);
+      var container = document.getElementById('subjectsContainer');
+      if (container) {
+        container.innerHTML = 
+          '<div class="text-center p-4 text-danger">' +
+            '<i class="bi bi-exclamation-triangle"></i>' +
+            '<p class="mt-2">授業情報の読み込みに失敗しました。<br>ページを再読み込みしてください。</p>' +
+          '</div>';
+      }
     }
 
     // 科目チェックボックスを生成
     function renderSubjectsCheckboxes() {
-      const container = document.getElementById('subjectsContainer');
+      var container = document.getElementById('subjectsContainer');
       
       if (courses.length === 0) {
-        container.innerHTML = `
-          <div class="text-center p-4 text-warning">
-            <i class="bi bi-info-circle"></i>
-            <p class="mt-2">授業情報が登録されていません。<br>管理者にお問い合わせください。</p>
-          </div>
-        `;
+        container.innerHTML = 
+          '<div class="text-center p-4 text-warning">' +
+            '<i class="bi bi-info-circle"></i>' +
+            '<p class="mt-2">授業情報が登録されていません。<br>管理者にお問い合わせください。</p>' +
+          '</div>';
         return;
       }
 
-      container.innerHTML = courses.map((course, index) => `
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="subject_${index}" 
-                 name="subjects" value="${course.courseName}">
-          <label class="form-check-label" for="subject_${index}">
-            <strong>${course.courseName}</strong><br>
-            <small class="text-muted">${course.teacherName}先生</small>
-          </label>
-        </div>
-      `).join('');
+      var html = '';
+      for (var i = 0; i < courses.length; i++) {
+        var course = courses[i];
+        html += 
+          '<div class="form-check">' +
+            '<input class="form-check-input" type="checkbox" id="subject_' + i + '" ' +
+                   'name="subjects" value="' + course.courseName + '">' +
+            '<label class="form-check-label" for="subject_' + i + '">' +
+              '<strong>' + course.courseName + '</strong><br>' +
+              '<small class="text-muted">' + course.teacherName + '先生</small>' +
+            '</label>' +
+          '</div>';
+      }
+      container.innerHTML = html;
     }
 
     // 日付入力の初期化
     function initializeDateInputs() {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('startDate').setAttribute('min', today);
-      document.getElementById('endDate').setAttribute('min', today);
+      var today = new Date().toISOString().split('T')[0];
+      var startDateInput = document.getElementById('startDate');
+      var endDateInput = document.getElementById('endDate');
+      
+      if (startDateInput) startDateInput.setAttribute('min', today);
+      if (endDateInput) endDateInput.setAttribute('min', today);
 
       // 開始日が変更されたら終了日の最小値を更新
-      document.getElementById('startDate').addEventListener('change', function() {
-        document.getElementById('endDate').setAttribute('min', this.value);
-      });
+      if (startDateInput && endDateInput) {
+        startDateInput.addEventListener('change', function() {
+          endDateInput.setAttribute('min', this.value);
+        });
+      }
     }
 
     // フォームバリデーションの設定
@@ -547,12 +572,12 @@
 
     // フォームバリデーション
     function validateForm() {
-      const studentId = document.getElementById('studentId').value.trim();
-      const studentName = document.getElementById('studentName').value.trim();
-      const studentEmail = document.getElementById('studentEmail').value.trim();
-      const startDate = document.getElementById('startDate').value;
-      const endDate = document.getElementById('endDate').value;
-      const selectedSubjects = document.querySelectorAll('input[name="subjects"]:checked');
+      var studentId = document.getElementById('studentId').value.trim();
+      var studentName = document.getElementById('studentName').value.trim();
+      var studentEmail = document.getElementById('studentEmail').value.trim();
+      var startDate = document.getElementById('startDate').value;
+      var endDate = document.getElementById('endDate').value;
+      var selectedSubjects = document.querySelectorAll('input[name="subjects"]:checked');
 
       if (!studentId || !studentName || !studentEmail || !startDate || !endDate) {
         showMessage('error', '必須項目を入力してください。');
@@ -560,14 +585,14 @@
       }
 
       // 学生番号の形式チェック（最初はアルファベット、その後は英数字）
-      const studentIdRegex = /^[A-Za-z][0-9A-Za-z]*$/;
+      var studentIdRegex = /^[A-Za-z][0-9A-Za-z]*$/;
       if (!studentIdRegex.test(studentId)) {
         showMessage('error', '学生番号は最初にアルファベット、その後に英数字を入力してください（例: B2024001）。');
         return false;
       }
 
       // メールアドレスの形式チェック
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(studentEmail)) {
         showMessage('error', '正しいメールアドレスを入力してください。');
         return false;
@@ -588,8 +613,11 @@
 
     // フォームデータの取得
     function getFormData() {
-      const selectedSubjects = Array.from(document.querySelectorAll('input[name="subjects"]:checked'))
-        .map(checkbox => checkbox.value);
+      var checkboxes = document.querySelectorAll('input[name="subjects"]:checked');
+      var selectedSubjects = [];
+      for (var i = 0; i < checkboxes.length; i++) {
+        selectedSubjects.push(checkboxes[i].value);
+      }
 
       return {
         studentId: document.getElementById('studentId').value.trim(),
@@ -635,8 +663,9 @@
         showMessage('success', message);
 
         // フォームをリセット
-        setTimeout(() => {
-          document.getElementById('absenceForm').reset();
+        setTimeout(function() {
+          var form = document.getElementById('absenceForm');
+          if (form) form.reset();
           clearAllSubjects();
         }, 2000);
 
@@ -655,60 +684,73 @@
 
     // ローディング表示の切り替え
     function showLoading(show) {
-      const submitText = document.querySelector('.submit-text');
-      const loading = document.querySelector('.loading');
-      const submitButton = document.querySelector('.btn-submit');
+      var submitText = document.querySelector('.submit-text');
+      var loading = document.querySelector('.loading');
+      var submitButton = document.querySelector('.btn-submit');
 
       if (show) {
-        submitText.style.display = 'none';
-        loading.style.display = 'inline';
-        submitButton.disabled = true;
+        if (submitText) submitText.style.display = 'none';
+        if (loading) loading.style.display = 'inline';
+        if (submitButton) submitButton.disabled = true;
       } else {
-        submitText.style.display = 'inline';
-        loading.style.display = 'none';
-        submitButton.disabled = false;
+        if (submitText) submitText.style.display = 'inline';
+        if (loading) loading.style.display = 'none';
+        if (submitButton) submitButton.disabled = false;
       }
     }
 
     // メッセージ表示
     function showMessage(type, message) {
-      const resultDiv = document.getElementById('resultMessage');
+      var resultDiv = document.getElementById('resultMessage');
+      if (!resultDiv) return;
+      
       resultDiv.innerHTML = message;
-      resultDiv.className = `result-message alert ${type === 'error' ? 'alert-danger' : 'alert-success'}`;
+      resultDiv.className = 'result-message alert ' + (type === 'error' ? 'alert-danger' : 'alert-success');
       resultDiv.style.display = 'block';
 
       // 5秒後に自動で隠す（成功時のみ）
       if (type === 'success') {
-        setTimeout(() => {
-          resultDiv.style.display = 'none';
+        setTimeout(function() {
+          if (resultDiv) resultDiv.style.display = 'none';
         }, 5000);
       }
 
       // メッセージの位置までスクロール
-      resultDiv.scrollIntoView({ behavior: 'smooth' });
+      if (resultDiv.scrollIntoView) {
+        try {
+          resultDiv.scrollIntoView({ behavior: 'smooth' });
+        } catch (error) {
+          // iOS Safari フォールバック
+          resultDiv.scrollIntoView(true);
+        }
+      }
     }
 
     // 全科目選択
     function selectAllSubjects() {
-      document.querySelectorAll('input[name="subjects"]').forEach(checkbox => {
-        checkbox.checked = true;
-      });
+      var checkboxes = document.querySelectorAll('input[name="subjects"]');
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = true;
+      }
     }
 
     // 全科目選択解除
     function clearAllSubjects() {
-      document.querySelectorAll('input[name="subjects"]').forEach(checkbox => {
-        checkbox.checked = false;
-      });
+      var checkboxes = document.querySelectorAll('input[name="subjects"]');
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = false;
+      }
     }
 
     // 学生番号入力の設定
     function setupStudentIdInput() {
-      const studentIdInput = document.getElementById('studentId');
+      var studentIdInput = document.getElementById('studentId');
+      
+      if (!studentIdInput) return; // 要素が見つからない場合は終了
       
       // 入力時に自動で大文字に変換
       studentIdInput.addEventListener('input', function(e) {
-        let value = e.target.value.toUpperCase();
+        var value = e.target.value.toUpperCase();
         
         // 英数字のみ許可
         value = value.replace(/[^A-Z0-9]/g, '');
@@ -721,7 +763,7 @@
         e.target.value = value;
         
         // リアルタイムバリデーション表示
-        const isValid = /^[A-Z][0-9A-Z]*$/.test(value) && value.length >= 2;
+        var isValid = /^[A-Z][0-9A-Z]*$/.test(value) && value.length >= 2;
         if (value.length > 0) {
           if (isValid) {
             e.target.classList.remove('is-invalid');
@@ -731,14 +773,26 @@
             e.target.classList.add('is-invalid');
           }
         } else {
-          e.target.classList.remove('is-valid', 'is-invalid');
+          e.target.classList.remove('is-valid');
+          e.target.classList.remove('is-invalid');
         }
       });
       
       // ペースト時の処理
       studentIdInput.addEventListener('paste', function(e) {
-        setTimeout(() => {
-          e.target.dispatchEvent(new Event('input'));
+        setTimeout(function() {
+          // iOS Safari対応
+          if (e.target.dispatchEvent) {
+            var event;
+            try {
+              event = new Event('input', { bubbles: true });
+            } catch (error) {
+              // IE対応のフォールバック
+              event = document.createEvent('Event');
+              event.initEvent('input', true, true);
+            }
+            e.target.dispatchEvent(event);
+          }
         }, 0);
       });
     }
@@ -746,23 +800,27 @@
     // スマホ向けの最適化
     function setupMobileOptimizations() {
       // iOS Safariでのviewport問題の対応
-      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (isIOS) {
         document.addEventListener('focusin', function(e) {
-          if (e.target.matches('input, textarea, select')) {
-            setTimeout(() => {
-              e.target.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center',
-                inline: 'nearest'
-              });
+          var target = e.target;
+          if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+            setTimeout(function() {
+              if (target.scrollIntoView) {
+                target.scrollIntoView({ 
+                  behavior: 'smooth', 
+                  block: 'center'
+                });
+              }
             }, 300);
           }
         });
 
         document.addEventListener('focusout', function(e) {
-          if (e.target.matches('input, textarea, select')) {
-            setTimeout(() => {
-              window.scrollTo(0, window.scrollY);
+          var target = e.target;
+          if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+            setTimeout(function() {
+              window.scrollTo(0, window.scrollY || window.pageYOffset || 0);
             }, 100);
           }
         });
@@ -770,21 +828,33 @@
 
       // チェックボックスのタッチ操作改善
       document.addEventListener('click', function(e) {
-        if (e.target.closest('.form-check')) {
-          const checkbox = e.target.closest('.form-check').querySelector('input[type="checkbox"]');
-          if (checkbox && e.target !== checkbox) {
+        var target = e.target;
+        var formCheck = target.closest ? target.closest('.form-check') : null;
+        if (!formCheck && target.parentNode) {
+          var parent = target.parentNode;
+          while (parent && parent.className && parent.className.indexOf('form-check') === -1) {
+            parent = parent.parentNode;
+          }
+          if (parent && parent.className && parent.className.indexOf('form-check') !== -1) {
+            formCheck = parent;
+          }
+        }
+        
+        if (formCheck) {
+          var checkbox = formCheck.querySelector('input[type="checkbox"]');
+          if (checkbox && target !== checkbox) {
             checkbox.click();
           }
         }
       });
 
       // 送信ボタンの二重タップ防止
-      const submitButton = document.querySelector('.btn-submit');
+      var submitButton = document.querySelector('.btn-submit');
       if (submitButton) {
         submitButton.addEventListener('touchend', function(e) {
           e.preventDefault();
           if (!isSubmitting) {
-            setTimeout(() => {
+            setTimeout(function() {
               submitButton.click();
             }, 50);
           }
