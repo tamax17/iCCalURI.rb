@@ -1,0 +1,480 @@
+<script>
+// グローバル変数
+let currentWeekStart = new Date();
+let rooms = [];
+let bookings = [];
+let isLoading = false;
+
+// 日本語の曜日配列
+const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+
+// 初期化
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
+});
+
+async function initializeApp() {
+    // 今週の月曜日を計算
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    currentWeekStart = new Date(today);
+    currentWeekStart.setDate(today.getDate() - dayOfWeek + 1);
+    
+    await loadRooms();
+    await loadBookings();
+    
+    setupEventListeners();
+    updateWeekDisplay();
+    renderSchedule();
+    setupTimeOptions();
+}
+
+// イベントリスナーの設定
+function setupEventListeners() {
+    // 週移動ボタン
+    document.getElementById('prevWeek').addEventListener('click', () => {
+        currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+        updateWeekDisplay();
+        loadBookings();
+    });
+    
+    document.getElementById('nextWeek').addEventListener('click', () => {
+        currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+        updateWeekDisplay();
+        loadBookings();
+    });
+    
+    // 予約追加ボタン
+    document.getElementById('addBookingBtn').addEventListener('click', () => {
+        openBookingModal();
+    });
+    
+    // モーダル関連
+    document.getElementById('closeModal').addEventListener('click', closeBookingModal);
+    document.getElementById('cancelBtn').addEventListener('click', closeBookingModal);
+    document.getElementById('deleteBtn').addEventListener('click', deleteBooking);
+    
+    // フォーム送信
+    document.getElementById('bookingForm').addEventListener('submit', saveBooking);
+    
+    // 確認ダイアログ
+    document.getElementById('confirmCancel').addEventListener('click', closeConfirmModal);
+    document.getElementById('confirmOk').addEventListener('click', confirmAction);
+    
+    // モーダル外クリックで閉じる
+    document.getElementById('bookingModal').addEventListener('click', (e) => {
+        if (e.target.id === 'bookingModal') closeBookingModal();
+    });
+    
+    document.getElementById('confirmModal').addEventListener('click', (e) => {
+        if (e.target.id === 'confirmModal') closeConfirmModal();
+    });
+}
+
+// 講義室データの読み込み
+async function loadRooms() {
+    try {
+        showLoading(true);
+        rooms = await callGasFunction('getRooms');
+        populateRoomSelect();
+    } catch (error) {
+        console.error('講義室の読み込みに失敗しました:', error);
+        alert('講義室の読み込みに失敗しました');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// 予約データの読み込み
+async function loadBookings() {
+    try {
+        showLoading(true);
+        const weekEnd = new Date(currentWeekStart);
+        weekEnd.setDate(currentWeekStart.getDate() + 6);
+        
+        const startDate = formatDate(currentWeekStart);
+        const endDate = formatDate(weekEnd);
+        
+        bookings = await callGasFunction('getBookings', startDate, endDate);
+        renderSchedule();
+    } catch (error) {
+        console.error('予約の読み込みに失敗しました:', error);
+        alert('予約の読み込みに失敗しました');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// GAS関数の呼び出し
+function callGasFunction(functionName, ...args) {
+    return new Promise((resolve, reject) => {
+        google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            [functionName](...args);
+    });
+}
+
+// 日付フォーマット
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}
+
+// 週表示の更新
+function updateWeekDisplay() {
+    const weekEnd = new Date(currentWeekStart);
+    weekEnd.setDate(currentWeekStart.getDate() + 6);
+    
+    const startStr = `${currentWeekStart.getMonth() + 1}/${currentWeekStart.getDate()}`;
+    const endStr = `${weekEnd.getMonth() + 1}/${weekEnd.getDate()}`;
+    
+    document.getElementById('currentWeek').textContent = `${startStr} - ${endStr}`;
+}
+
+// スケジュール表のレンダリング
+function renderSchedule() {
+    const grid = document.getElementById('scheduleGrid');
+    grid.innerHTML = '';
+    
+    // ヘッダー行の作成
+    createHeaders(grid);
+    
+    // 講義室行の作成
+    rooms.forEach(room => {
+        createRoomRow(grid, room);
+    });
+}
+
+// ヘッダーの作成
+function createHeaders(grid) {
+    // 空のセル（左上角）
+    const emptyCell = document.createElement('div');
+    emptyCell.className = 'time-header';
+    grid.appendChild(emptyCell);
+    
+    // 日付ヘッダー
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(currentWeekStart);
+        date.setDate(currentWeekStart.getDate() + i);
+        
+        const headerCell = document.createElement('div');
+        headerCell.className = 'date-header';
+        
+        const dateNumber = document.createElement('div');
+        dateNumber.className = 'date-number';
+        dateNumber.textContent = date.getDate();
+        
+        const dateDay = document.createElement('div');
+        dateDay.className = 'date-day';
+        dateDay.textContent = dayNames[date.getDay()];
+        
+        headerCell.appendChild(dateNumber);
+        headerCell.appendChild(dateDay);
+        grid.appendChild(headerCell);
+    }
+}
+
+// 講義室行の作成
+function createRoomRow(grid, room) {
+    // 講義室名のセル
+    const roomHeader = document.createElement('div');
+    roomHeader.className = 'room-header';
+    roomHeader.textContent = room['講義室名'] || room.name;
+    grid.appendChild(roomHeader);
+    
+    // 各日のセル
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(currentWeekStart);
+        date.setDate(currentWeekStart.getDate() + i);
+        const dateStr = formatDate(date);
+        
+        const cell = document.createElement('div');
+        cell.className = 'schedule-cell';
+        cell.dataset.roomId = room.id || room.ID;
+        cell.dataset.date = dateStr;
+        
+        // この日のこの講義室の予約を取得
+        const dayBookings = bookings.filter(booking => 
+            (booking.room_id || booking['講義室id']) === (room.id || room.ID) && 
+            (booking.date || booking['日付']) === dateStr
+        );
+        
+        // 予約をセルに追加
+        dayBookings.forEach(booking => {
+            const bookingElement = createBookingElement(booking);
+            cell.appendChild(bookingElement);
+        });
+        
+        // セルクリックイベント
+        cell.addEventListener('click', (e) => {
+            if (!e.target.closest('.booking')) {
+                openBookingModal(room.id || room.ID, dateStr);
+            }
+        });
+        
+        grid.appendChild(cell);
+    }
+}
+
+// 予約要素の作成
+function createBookingElement(booking) {
+    const element = document.createElement('div');
+    element.className = 'booking';
+    element.style.backgroundColor = booking.color || booking['色'] || '#3B82F6';
+    
+    const title = document.createElement('div');
+    title.className = 'booking-title';
+    title.textContent = booking.title || booking['タイトル'];
+    
+    const info = document.createElement('div');
+    info.className = 'booking-info';
+    const startTime = booking.start_time || booking['開始時間'];
+    const endTime = booking.end_time || booking['終了時間'];
+    const instructor = booking.instructor || booking['担当者'];
+    info.textContent = `${startTime}-${endTime} ${instructor || ''}`;
+    
+    element.appendChild(title);
+    element.appendChild(info);
+    
+    // クリックで編集モーダルを開く
+    element.addEventListener('click', (e) => {
+        e.stopPropagation();
+        editBooking(booking);
+    });
+    
+    return element;
+}
+
+// 講義室セレクトの設定
+function populateRoomSelect() {
+    const select = document.getElementById('roomSelect');
+    select.innerHTML = '<option value="">講義室を選択してください</option>';
+    
+    rooms.forEach(room => {
+        const option = document.createElement('option');
+        option.value = room.id || room.ID;
+        option.textContent = `${room['講義室名'] || room.name} (${room['収容人数'] || room.capacity}人)`;
+        select.appendChild(option);
+    });
+}
+
+// 時間オプションの設定
+function setupTimeOptions() {
+    const startSelect = document.getElementById('startTimeInput');
+    const endSelect = document.getElementById('endTimeInput');
+    
+    // 時間オプションを生成
+    const timeSlots = [];
+    for (let hour = 9; hour < 18; hour++) {
+        timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+        if (hour < 17) {
+            timeSlots.push(`${hour.toString().padStart(2, '0')}:30`);
+        }
+    }
+    
+    // 開始時間
+    startSelect.innerHTML = '<option value="">選択してください</option>';
+    timeSlots.forEach(time => {
+        const option = document.createElement('option');
+        option.value = time;
+        option.textContent = time;
+        startSelect.appendChild(option);
+    });
+    
+    // 終了時間
+    endSelect.innerHTML = '<option value="">選択してください</option>';
+    timeSlots.forEach(time => {
+        const option = document.createElement('option');
+        option.value = time;
+        option.textContent = time;
+        endSelect.appendChild(option);
+    });
+    
+    // 開始時間変更時に終了時間を自動設定
+    startSelect.addEventListener('change', () => {
+        const startTime = startSelect.value;
+        if (startTime) {
+            const startHour = parseInt(startTime.split(':')[0]);
+            const startMinute = parseInt(startTime.split(':')[1]);
+            const endHour = startMinute === 30 ? startHour + 1 : startHour;
+            const endMinute = startMinute === 30 ? 30 : 30;
+            const suggestedEndTime = `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
+            
+            if (timeSlots.includes(suggestedEndTime)) {
+                endSelect.value = suggestedEndTime;
+            }
+        }
+    });
+}
+
+// 予約モーダルを開く
+function openBookingModal(roomId = '', date = '') {
+    document.getElementById('bookingModal').style.display = 'flex';
+    document.getElementById('modalTitle').textContent = '予約追加';
+    document.getElementById('bookingForm').reset();
+    document.getElementById('bookingId').value = '';
+    document.getElementById('deleteBtn').style.display = 'none';
+    
+    if (roomId) {
+        document.getElementById('roomSelect').value = roomId;
+    }
+    
+    if (date) {
+        document.getElementById('dateInput').value = date;
+    } else {
+        // デフォルトで今日の日付を設定
+        document.getElementById('dateInput').value = formatDate(new Date());
+    }
+}
+
+// 予約編集モーダルを開く
+function editBooking(booking) {
+    document.getElementById('bookingModal').style.display = 'flex';
+    document.getElementById('modalTitle').textContent = '予約編集';
+    document.getElementById('deleteBtn').style.display = 'block';
+    
+    // フォームに値を設定
+    document.getElementById('bookingId').value = booking.id || booking.ID;
+    document.getElementById('roomSelect').value = booking.room_id || booking['講義室id'];
+    document.getElementById('titleInput').value = booking.title || booking['タイトル'];
+    document.getElementById('instructorInput').value = booking.instructor || booking['担当者'] || '';
+    document.getElementById('courseCodeInput').value = booking.course_code || booking['講義コード'] || '';
+    document.getElementById('dateInput').value = booking.date || booking['日付'];
+    document.getElementById('startTimeInput').value = booking.start_time || booking['開始時間'];
+    document.getElementById('endTimeInput').value = booking.end_time || booking['終了時間'];
+    document.getElementById('descriptionInput').value = booking.description || booking['説明'] || '';
+    
+    // 色の設定
+    const color = booking.color || booking['色'] || '#3B82F6';
+    const colorRadio = document.querySelector(`input[name="color"][value="${color}"]`);
+    if (colorRadio) {
+        colorRadio.checked = true;
+    }
+}
+
+// 予約モーダルを閉じる
+function closeBookingModal() {
+    document.getElementById('bookingModal').style.display = 'none';
+}
+
+// 予約保存
+async function saveBooking(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const bookingData = {
+        roomId: formData.get('roomSelect') || document.getElementById('roomSelect').value,
+        title: formData.get('titleInput') || document.getElementById('titleInput').value,
+        instructor: formData.get('instructorInput') || document.getElementById('instructorInput').value,
+        courseCode: formData.get('courseCodeInput') || document.getElementById('courseCodeInput').value,
+        date: formData.get('dateInput') || document.getElementById('dateInput').value,
+        startTime: formData.get('startTimeInput') || document.getElementById('startTimeInput').value,
+        endTime: formData.get('endTimeInput') || document.getElementById('endTimeInput').value,
+        color: formData.get('color') || document.querySelector('input[name="color"]:checked')?.value || '#3B82F6',
+        description: formData.get('descriptionInput') || document.getElementById('descriptionInput').value
+    };
+    
+    // バリデーション
+    if (!bookingData.roomId || !bookingData.title || !bookingData.date || 
+        !bookingData.startTime || !bookingData.endTime) {
+        alert('必須項目を入力してください');
+        return;
+    }
+    
+    if (bookingData.startTime >= bookingData.endTime) {
+        alert('終了時間は開始時間より後に設定してください');
+        return;
+    }
+    
+    try {
+        showLoading(true);
+        
+        const bookingId = document.getElementById('bookingId').value;
+        
+        if (bookingId) {
+            // 更新
+            await callGasFunction('updateBooking', bookingId, bookingData);
+        } else {
+            // 新規作成
+            await callGasFunction('createBooking', bookingData);
+        }
+        
+        closeBookingModal();
+        await loadBookings();
+        
+    } catch (error) {
+        console.error('予約の保存に失敗しました:', error);
+        alert('予約の保存に失敗しました: ' + error.message);
+    } finally {
+        showLoading(false);
+    }
+}
+
+// 予約削除
+function deleteBooking() {
+    const bookingId = document.getElementById('bookingId').value;
+    if (!bookingId) return;
+    
+    showConfirmModal('この予約を削除しますか？', async () => {
+        try {
+            showLoading(true);
+            await callGasFunction('deleteBooking', bookingId);
+            closeBookingModal();
+            await loadBookings();
+        } catch (error) {
+            console.error('予約の削除に失敗しました:', error);
+            alert('予約の削除に失敗しました: ' + error.message);
+        } finally {
+            showLoading(false);
+        }
+    });
+}
+
+// 確認ダイアログを表示
+function showConfirmModal(message, callback) {
+    document.getElementById('confirmMessage').textContent = message;
+    document.getElementById('confirmModal').style.display = 'flex';
+    
+    // コールバック関数を保存
+    window.confirmCallback = callback;
+}
+
+// 確認ダイアログを閉じる
+function closeConfirmModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+    window.confirmCallback = null;
+}
+
+// 確認アクション
+function confirmAction() {
+    if (window.confirmCallback) {
+        window.confirmCallback();
+    }
+    closeConfirmModal();
+}
+
+// ローディング表示/非表示
+function showLoading(show) {
+    isLoading = show;
+    document.getElementById('loading').style.display = show ? 'block' : 'none';
+    
+    // ボタンの無効化/有効化
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(btn => {
+        btn.disabled = show;
+    });
+}
+
+// エラーハンドリング
+window.addEventListener('error', (event) => {
+    console.error('エラーが発生しました:', event.error);
+});
+
+// Google Apps Script の読み込み完了を待つ
+window.addEventListener('load', () => {
+    if (typeof google === 'undefined' || !google.script) {
+        console.error('Google Apps Script APIが読み込まれていません');
+        alert('アプリケーションの初期化に失敗しました');
+    }
+});
+</script>
