@@ -231,13 +231,8 @@ function submitAbsence(formData) {
  * 担当教員にメールを送信する関数（複数科目対応）
  */
 function sendAbsenceEmail(teacherGroup, formData) {
-  // 複数科目の場合と単一科目の場合で件名を調整
-  var subject;
-  if (teacherGroup.subjects.length === 1) {
-    subject = '【欠席連絡】' + teacherGroup.subjects[0] + ' - ' + formData.studentName + 'さん';
-  } else {
-    subject = '【欠席連絡】' + teacherGroup.subjects.length + '科目 - ' + formData.studentName + 'さん';
-  }
+  // 件名を統一フォーマットに変更
+  var subject = '【欠席連絡】 - ' + formData.studentId + ' ' + formData.studentName;
   
   var body = teacherGroup.teacherName + '先生\n\n' +
     'いつもお世話になっております。\n\n' +

@@ -112,7 +112,7 @@
                 学生番号 <span class="required">*</span>
               </label>
               <input type="text" class="form-control" id="studentId" name="studentId" required 
-                     placeholder="例: B2024001" maxlength="12" 
+                     placeholder="例: B123456" maxlength="12" 
                      autocomplete="off" style="text-transform: uppercase;">
               <div class="form-text">最初はアルファベット、その後に英数字を入力してください</div>
             </div>
@@ -121,7 +121,7 @@
                 氏名 <span class="required">*</span>
               </label>
               <input type="text" class="form-control" id="studentName" name="studentName" required 
-                     placeholder="例: 山田太郎" maxlength="50">
+                     placeholder="例: 山田 太郎" maxlength="50">
             </div>
           </div>
           <div class="row">
@@ -388,7 +388,7 @@
 
       // 学生番号の形式チェック（最初はアルファベット、その後は英数字）
       if (!/^[A-Za-z][0-9A-Za-z]*$/.test(studentId)) {
-        showMessage('error', '学生番号は最初にアルファベット、その後に英数字を入力してください（例: B2024001）。');
+        showMessage('error', '学生番号は最初にアルファベット、その後に英数字を入力してください（例: B123456）。');
         return;
       }
 
