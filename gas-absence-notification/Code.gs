@@ -171,7 +171,7 @@ function submitAbsence(formData) {
       var subject = formData.subjects[j];
       if (courseMap[subject]) {
         var course = courseMap[subject];
-        var teacherKey = course.email; // メールアドレスをキーとして使用
+        var teacherKey = course.teacherName; // 教員名をキーとして使用
         
         if (!teacherGroups[teacherKey]) {
           teacherGroups[teacherKey] = {

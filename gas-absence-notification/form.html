@@ -498,7 +498,7 @@
       selectedSubjects.forEach(cb => {
         const course = courses.find(c => c.courseName === cb.value);
         if (course) {
-          const teacherKey = course.email;
+          const teacherKey = course.teacherName; // 教員名をキーとして使用
           if (!teacherGroups[teacherKey]) {
             teacherGroups[teacherKey] = {
               teacherName: course.teacherName,
