@@ -47,6 +47,61 @@ body {
     flex-wrap: wrap;
 }
 
+/* モードタブ */
+.mode-tabs {
+    display: flex;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.btn-tab {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.btn-tab.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-tab:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* モードコントロール */
+.mode-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.day-select {
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+}
+
+.day-select option {
+    background: #1e40af;
+    color: white;
+}
+
 .current-week {
     font-size: 1.1rem;
     font-weight: 500;
@@ -81,6 +136,15 @@ body {
     background: #2563eb;
 }
 
+.btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
 .btn-secondary {
     background: rgba(255, 255, 255, 0.2);
     color: white;
@@ -103,6 +167,11 @@ body {
 /* メインコンテンツ */
 .main {
     padding: 30px 0;
+}
+
+/* ビューコンテンツ */
+.view-content {
+    animation: fadeIn 0.3s ease;
 }
 
 /* 凡例 */
@@ -188,7 +257,7 @@ body {
     background-color: #f1f5f9;
 }
 
-.booking {
+.booking, .template-item {
     position: absolute;
     left: 2px;
     right: 2px;
@@ -205,7 +274,7 @@ body {
     white-space: nowrap;
 }
 
-.booking:hover {
+.booking:hover, .template-item:hover {
     transform: scale(1.02);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     z-index: 10;
@@ -213,14 +282,32 @@ body {
     min-height: auto;
 }
 
-.booking-title {
+.booking-title, .template-title {
     font-weight: 600;
     margin-bottom: 2px;
 }
 
-.booking-info {
+.booking-info, .template-info {
     font-size: 10px;
     opacity: 0.9;
+}
+
+/* アラート */
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    border: 1px solid transparent;
+}
+
+.alert-warning {
+    background-color: #fef3c7;
+    border-color: #f59e0b;
+    color: #92400e;
+}
+
+.alert strong {
+    font-weight: 600;
 }
 
 /* モーダル */
@@ -294,7 +381,7 @@ body {
 
 .form-row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
 
@@ -409,6 +496,17 @@ textarea {
     
     .header-controls {
         justify-content: center;
+        width: 100%;
+    }
+    
+    .mode-tabs {
+        order: -1;
+        margin-bottom: 15px;
+    }
+    
+    .mode-controls {
+        justify-content: center;
+        width: 100%;
     }
     
     .current-week {
@@ -431,6 +529,7 @@ textarea {
     
     .legend {
         justify-content: center;
+        text-align: center;
     }
     
     .modal-content {
@@ -449,13 +548,22 @@ textarea {
         font-size: 11px;
     }
     
-    .booking {
+    .booking, .template-item {
         font-size: 10px;
         padding: 4px 6px;
     }
     
     .time-header, .date-header, .room-header {
         padding: 10px 5px;
+    }
+    
+    .mode-tabs {
+        width: 100%;
+    }
+    
+    .btn-tab {
+        flex: 1;
+        text-align: center;
     }
 }
 </style>

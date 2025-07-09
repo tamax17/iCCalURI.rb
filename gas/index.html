@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>講義室予約管理システム</title>
+    <title>講義室予約管理システム（曜日テンプレート版）</title>
     <?!= include('css'); ?>
 </head>
 <body>
@@ -13,10 +13,34 @@
             <div class="container">
                 <h1 class="title">講義室予約管理システム</h1>
                 <div class="header-controls">
-                    <button id="prevWeek" class="btn btn-secondary">＜ 前週</button>
-                    <span id="currentWeek" class="current-week"></span>
-                    <button id="nextWeek" class="btn btn-secondary">次週 ＞</button>
-                    <button id="addBookingBtn" class="btn btn-primary">予約追加</button>
+                    <!-- モード切り替え -->
+                    <div class="mode-tabs">
+                        <button id="templateModeBtn" class="btn btn-tab active">テンプレート管理</button>
+                        <button id="bookingModeBtn" class="btn btn-tab">予約一覧</button>
+                    </div>
+                    
+                    <!-- テンプレートモード用コントロール -->
+                    <div id="templateControls" class="mode-controls">
+                        <select id="dayOfWeekSelect" class="day-select">
+                            <option value="">全曜日</option>
+                            <option value="月">月曜日</option>
+                            <option value="火">火曜日</option>
+                            <option value="水">水曜日</option>
+                            <option value="木">木曜日</option>
+                            <option value="金">金曜日</option>
+                            <option value="土">土曜日</option>
+                            <option value="日">日曜日</option>
+                        </select>
+                        <button id="addTemplateBtn" class="btn btn-primary">テンプレート追加</button>
+                        <button id="expandBookingsBtn" class="btn btn-success">予約展開</button>
+                    </div>
+                    
+                    <!-- 予約モード用コントロール -->
+                    <div id="bookingControls" class="mode-controls" style="display: none;">
+                        <button id="prevWeek" class="btn btn-secondary">＜ 前週</button>
+                        <span id="currentWeek" class="current-week"></span>
+                        <button id="nextWeek" class="btn btn-secondary">次週 ＞</button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -24,30 +48,69 @@
         <!-- メインコンテンツ -->
         <main class="main">
             <div class="container">
-                <!-- 凡例 -->
-                <div class="legend">
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #3B82F6;"></div>
-                        <span>講義</span>
+                <!-- テンプレート管理画面 -->
+                <div id="templateView" class="view-content">
+                    <!-- 凡例 -->
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #3B82F6;"></div>
+                            <span>講義</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #EF4444;"></div>
+                            <span>試験</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #10B981;"></div>
+                            <span>セミナー</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #F59E0B;"></div>
+                            <span>会議</span>
+                        </div>
+                        <div class="legend-item">
+                            <span><strong>※曜日テンプレートで時間割を作成します</strong></span>
+                        </div>
                     </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #EF4444;"></div>
-                        <span>試験</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #10B981;"></div>
-                        <span>セミナー</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: #F59E0B;"></div>
-                        <span>会議</span>
+
+                    <!-- テンプレート表 -->
+                    <div class="schedule-container">
+                        <div class="schedule-grid" id="templateGrid">
+                            <!-- 動的に生成 -->
+                        </div>
                     </div>
                 </div>
 
-                <!-- スケジュール表 -->
-                <div class="schedule-container">
-                    <div class="schedule-grid" id="scheduleGrid">
-                        <!-- 動的に生成 -->
+                <!-- 予約一覧画面 -->
+                <div id="bookingView" class="view-content" style="display: none;">
+                    <!-- 凡例 -->
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #3B82F6;"></div>
+                            <span>講義</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #EF4444;"></div>
+                            <span>試験</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #10B981;"></div>
+                            <span>セミナー</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #F59E0B;"></div>
+                            <span>会議</span>
+                        </div>
+                        <div class="legend-item">
+                            <span><strong>※テンプレートから展開された実際の予約です</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- スケジュール表 -->
+                    <div class="schedule-container">
+                        <div class="schedule-grid" id="scheduleGrid">
+                            <!-- 動的に生成 -->
+                        </div>
                     </div>
                 </div>
 
@@ -59,78 +122,88 @@
         </main>
     </div>
 
-    <!-- 予約追加/編集モーダル -->
-    <div id="bookingModal" class="modal" style="display: none;">
+    <!-- テンプレート追加/編集モーダル -->
+    <div id="templateModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modalTitle">予約追加</h3>
-                <button id="closeModal" class="close-btn">&times;</button>
+                <h3 id="templateModalTitle">テンプレート追加</h3>
+                <button id="closeTemplateModal" class="close-btn">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="bookingForm">
-                    <input type="hidden" id="bookingId">
+                <form id="templateForm">
+                    <input type="hidden" id="templateId">
                     
                     <div class="form-group">
-                        <label for="roomSelect">講義室 *</label>
-                        <select id="roomSelect" required>
+                        <label for="templateDaySelect">曜日 *</label>
+                        <select id="templateDaySelect" required>
+                            <option value="">曜日を選択してください</option>
+                            <option value="月">月曜日</option>
+                            <option value="火">火曜日</option>
+                            <option value="水">水曜日</option>
+                            <option value="木">木曜日</option>
+                            <option value="金">金曜日</option>
+                            <option value="土">土曜日</option>
+                            <option value="日">日曜日</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="templateRoomSelect">講義室 *</label>
+                        <select id="templateRoomSelect" required>
                             <option value="">講義室を選択してください</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label for="titleInput">タイトル *</label>
-                        <input type="text" id="titleInput" required placeholder="例: データベース設計">
+                        <label for="templateTitleInput">タイトル *</label>
+                        <input type="text" id="templateTitleInput" required placeholder="例: データベース設計">
                     </div>
 
                     <div class="form-group">
-                        <label for="instructorInput">担当者</label>
-                        <input type="text" id="instructorInput" placeholder="例: 田中太郎">
+                        <label for="templateInstructorInput">担当者</label>
+                        <input type="text" id="templateInstructorInput" placeholder="例: 田中太郎">
                     </div>
 
                     <div class="form-group">
-                        <label for="courseCodeInput">講義コード</label>
-                        <input type="text" id="courseCodeInput" placeholder="例: CS101">
+                        <label for="templateCourseCodeInput">講義コード</label>
+                        <input type="text" id="templateCourseCodeInput" placeholder="例: CS101">
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="dateInput">日付 *</label>
-                            <input type="date" id="dateInput" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="startTimeInput">開始時間 *</label>
-                            <select id="startTimeInput" required>
+                            <label for="templateStartTimeInput">開始時間 *</label>
+                            <select id="templateStartTimeInput" required>
                                 <option value="">選択してください</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="endTimeInput">終了時間 *</label>
-                            <select id="endTimeInput" required>
+                            <label for="templateEndTimeInput">終了時間 *</label>
+                            <select id="templateEndTimeInput" required>
                                 <option value="">選択してください</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="colorInput">色</label>
+                        <label for="templateColorInput">色</label>
                         <div class="color-options">
                             <label class="color-option">
-                                <input type="radio" name="color" value="#3B82F6" checked>
+                                <input type="radio" name="templateColor" value="#3B82F6" checked>
                                 <span class="color-preview" style="background: #3B82F6;"></span>
                                 講義
                             </label>
                             <label class="color-option">
-                                <input type="radio" name="color" value="#EF4444">
+                                <input type="radio" name="templateColor" value="#EF4444">
                                 <span class="color-preview" style="background: #EF4444;"></span>
                                 試験
                             </label>
                             <label class="color-option">
-                                <input type="radio" name="color" value="#10B981">
+                                <input type="radio" name="templateColor" value="#10B981">
                                 <span class="color-preview" style="background: #10B981;"></span>
                                 セミナー
                             </label>
                             <label class="color-option">
-                                <input type="radio" name="color" value="#F59E0B">
+                                <input type="radio" name="templateColor" value="#F59E0B">
                                 <span class="color-preview" style="background: #F59E0B;"></span>
                                 会議
                             </label>
@@ -138,16 +211,49 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="descriptionInput">説明</label>
-                        <textarea id="descriptionInput" placeholder="追加情報があれば入力してください"></textarea>
+                        <label for="templateDescriptionInput">説明</label>
+                        <textarea id="templateDescriptionInput" placeholder="追加情報があれば入力してください"></textarea>
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" id="cancelBtn" class="btn btn-secondary">キャンセル</button>
-                        <button type="button" id="deleteBtn" class="btn btn-danger" style="display: none;">削除</button>
+                        <button type="button" id="cancelTemplateBtn" class="btn btn-secondary">キャンセル</button>
+                        <button type="button" id="deleteTemplateBtn" class="btn btn-danger" style="display: none;">削除</button>
                         <button type="submit" class="btn btn-primary">保存</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 予約展開モーダル -->
+    <div id="expandModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>予約展開</h3>
+                <button id="closeExpandModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>曜日テンプレートから実際の予約を作成します。</p>
+                
+                <div class="form-group">
+                    <label for="expandStartDate">期間開始日 *</label>
+                    <input type="date" id="expandStartDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="expandEndDate">期間終了日 *</label>
+                    <input type="date" id="expandEndDate" required>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>注意:</strong> 既存の予約は削除され、テンプレートから新しく展開されます。
+                    学年歴の休日設定に従って、授業日のみ予約が作成されます。
+                </div>
+
+                <div class="form-actions">
+                    <button id="cancelExpandBtn" class="btn btn-secondary">キャンセル</button>
+                    <button id="executeExpandBtn" class="btn btn-primary">展開実行</button>
+                </div>
             </div>
         </div>
     </div>
