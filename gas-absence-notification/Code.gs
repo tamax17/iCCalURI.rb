@@ -161,23 +161,46 @@ function submitAbsence(formData) {
       courseMap[course.courseName] = course;
     }
     
-    // 選択された科目の担当教員にメールを送信
+    // 同一教員の科目をグループ化
+    var teacherGroups = {};
     var emailsSent = [];
     var emailsNotSent = [];
     
+    // 教員ごとに科目をグループ化
     for (var j = 0; j < formData.subjects.length; j++) {
       var subject = formData.subjects[j];
       if (courseMap[subject]) {
         var course = courseMap[subject];
-        try {
-          sendAbsenceEmail(course, formData);
-          emailsSent.push(subject + ' (' + course.teacherName + ')');
-        } catch (emailError) {
-          console.error('メール送信エラー:', emailError);
-          emailsNotSent.push(subject + ' (' + course.teacherName + ')');
+        var teacherKey = course.email; // メールアドレスをキーとして使用
+        
+        if (!teacherGroups[teacherKey]) {
+          teacherGroups[teacherKey] = {
+            teacherName: course.teacherName,
+            email: course.email,
+            subjects: []
+          };
         }
+        teacherGroups[teacherKey].subjects.push(subject);
       } else {
         emailsNotSent.push(subject + ' (担当教員情報なし)');
+      }
+    }
+    
+    // 教員ごとにまとめてメール送信
+    for (var teacherKey in teacherGroups) {
+      var teacherGroup = teacherGroups[teacherKey];
+      try {
+        sendAbsenceEmail(teacherGroup, formData);
+        // 送信完了リストに追加
+        for (var k = 0; k < teacherGroup.subjects.length; k++) {
+          emailsSent.push(teacherGroup.subjects[k] + ' (' + teacherGroup.teacherName + ')');
+        }
+      } catch (emailError) {
+        console.error('メール送信エラー:', emailError);
+        // 送信失敗リストに追加
+        for (var l = 0; l < teacherGroup.subjects.length; l++) {
+          emailsNotSent.push(teacherGroup.subjects[l] + ' (' + teacherGroup.teacherName + ')');
+        }
       }
     }
     
@@ -205,20 +228,36 @@ function submitAbsence(formData) {
 }
 
 /**
- * 担当教員にメールを送信する関数
+ * 担当教員にメールを送信する関数（複数科目対応）
  */
-function sendAbsenceEmail(course, formData) {
-  var subject = '【欠席連絡】' + course.courseName + ' - ' + formData.studentName + 'さん';
+function sendAbsenceEmail(teacherGroup, formData) {
+  // 複数科目の場合と単一科目の場合で件名を調整
+  var subject;
+  if (teacherGroup.subjects.length === 1) {
+    subject = '【欠席連絡】' + teacherGroup.subjects[0] + ' - ' + formData.studentName + 'さん';
+  } else {
+    subject = '【欠席連絡】' + teacherGroup.subjects.length + '科目 - ' + formData.studentName + 'さん';
+  }
   
-  var body = course.teacherName + '先生\n\n' +
+  var body = teacherGroup.teacherName + '先生\n\n' +
     'いつもお世話になっております。\n\n' +
     '以下の学生より授業の欠席連絡がありましたのでお知らせいたします。\n\n' +
     '【学生情報】\n' +
     '学生番号: ' + formData.studentId + '\n' +
     '氏名: ' + formData.studentName + '\n\n' +
-    '【欠席情報】\n' +
-    '科目名: ' + course.courseName + '\n' +
-    '欠席期間: ' + formData.startDate + ' ～ ' + formData.endDate + '\n\n' +
+    '【欠席情報】\n';
+  
+  // 複数科目の場合は科目一覧を表示
+  if (teacherGroup.subjects.length === 1) {
+    body += '科目名: ' + teacherGroup.subjects[0] + '\n';
+  } else {
+    body += '欠席科目:\n';
+    for (var i = 0; i < teacherGroup.subjects.length; i++) {
+      body += '  ・' + teacherGroup.subjects[i] + '\n';
+    }
+  }
+  
+  body += '欠席期間: ' + formData.startDate + ' ～ ' + formData.endDate + '\n\n' +
     '【欠席理由】\n' +
     (formData.reason || '記載なし') + '\n\n' +
     '何かご不明な点がございましたら、学生に直接お問い合わせください。\n\n' +
@@ -228,14 +267,16 @@ function sendAbsenceEmail(course, formData) {
 
   try {
     MailApp.sendEmail({
-      to: course.email,
+      to: teacherGroup.email,
       subject: subject,
       body: body,
       replyTo: formData.studentEmail
     });
-    console.log(`メール送信完了: ${course.teacherName}先生 (${course.email})`);
+    
+    var subjectList = teacherGroup.subjects.join(', ');
+    console.log(`メール送信完了: ${teacherGroup.teacherName}先生 (${teacherGroup.email}) - 科目: ${subjectList}`);
   } catch (error) {
-    console.error(`メール送信失敗: ${course.teacherName}先生`, error);
+    console.error(`メール送信失敗: ${teacherGroup.teacherName}先生`, error);
     throw error;
   }
 }

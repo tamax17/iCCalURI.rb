@@ -463,16 +463,7 @@
             <h6 class="text-success"><i class="bi bi-book"></i> 欠席科目</h6>
             <div class="card mb-3">
               <div class="card-body">
-                <ul class="list-unstyled mb-0">
-                  ${selectedSubjects.map(cb => {
-                    const course = courses.find(c => c.courseName === cb.value);
-                    return `<li class="mb-2">
-                      <i class="bi bi-check-circle-fill text-success"></i> 
-                      <strong>${cb.value}</strong><br>
-                      <small class="text-muted ms-3">${course ? course.teacherName + '先生' : '担当教員不明'}</small>
-                    </li>`;
-                  }).join('')}
-                </ul>
+                ${generateTeacherGroupDisplay(selectedSubjects)}
               </div>
             </div>
           </div>
@@ -497,6 +488,78 @@
       // モーダルを表示
       const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
       confirmModal.show();
+    }
+
+    // 教員ごとの科目グループ表示を生成
+    function generateTeacherGroupDisplay(selectedSubjects) {
+      // 教員ごとに科目をグループ化
+      const teacherGroups = {};
+      
+      selectedSubjects.forEach(cb => {
+        const course = courses.find(c => c.courseName === cb.value);
+        if (course) {
+          const teacherKey = course.email;
+          if (!teacherGroups[teacherKey]) {
+            teacherGroups[teacherKey] = {
+              teacherName: course.teacherName,
+              email: course.email,
+              subjects: []
+            };
+          }
+          teacherGroups[teacherKey].subjects.push(cb.value);
+        }
+      });
+
+      // グループ化された表示を生成
+      let display = '';
+      let groupCount = 0;
+      
+      for (const teacherKey in teacherGroups) {
+        const group = teacherGroups[teacherKey];
+        groupCount++;
+        
+        // 教員情報のヘッダー
+        const isMultipleSubjects = group.subjects.length > 1;
+        const emailIcon = isMultipleSubjects ? 
+          '<i class="bi bi-envelope-fill text-primary"></i>' : 
+          '<i class="bi bi-envelope text-primary"></i>';
+        
+        display += `
+          <div class="teacher-group mb-3 ${groupCount > 1 ? 'border-top pt-3' : ''}">
+            <div class="d-flex align-items-center mb-2">
+              ${emailIcon}
+              <strong class="ms-2">${group.teacherName}先生</strong>
+              ${isMultipleSubjects ? 
+                '<span class="badge bg-primary ms-2">統合メール</span>' : 
+                '<span class="badge bg-outline-secondary ms-2">個別メール</span>'
+              }
+            </div>
+            <ul class="list-unstyled mb-0 ms-4">
+        `;
+        
+        // 科目一覧
+        group.subjects.forEach(subject => {
+          display += `
+            <li class="mb-1">
+              <i class="bi bi-check-circle-fill text-success"></i> 
+              <strong>${subject}</strong>
+            </li>
+          `;
+        });
+        
+        display += `
+            </ul>
+            <small class="text-muted ms-4">
+              ${isMultipleSubjects ? 
+                `${group.subjects.length}科目まとめて1通のメールで送信` : 
+                '1科目1通のメールで送信'
+              }
+            </small>
+          </div>
+        `;
+      }
+
+      return display;
     }
 
     // 実際の送信処理
